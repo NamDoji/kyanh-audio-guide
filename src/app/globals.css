@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+@custom-variant tunnel (&:where([data-theme="tunnel"], [data-theme="tunnel"] *));
+
+:root {
+  --font-scale: 1;
+  --shell: #fffaf0;
+  --ink: #172033;
+  --muted: #637083;
+  --line: rgba(23, 32, 51, 0.12);
+  --ocean: #006c80;
+  --teal: #00a6a6;
+  --teal-soft: #dff6f1;
+  --sand: #f4c866;
+  --sand-soft: #fff0c8;
+  --earth: #7b4d31;
+  --bamboo: #3f7a4f;
+  --clay: #9d4f2f;
+  --shadow: 0 18px 60px rgba(23, 32, 51, 0.13);
+}
+
+:root[data-theme="tunnel"] {
+  --shell: #17110c;
+  --ink: #fff8ea;
+  --muted: #d9c8ac;
+  --line: rgba(255, 248, 234, 0.18);
+  --ocean: #54c7d3;
+  --teal: #7be2d6;
+  --teal-soft: rgba(84, 199, 211, 0.14);
+  --sand: #e1b75a;
+  --sand-soft: rgba(244, 200, 102, 0.14);
+  --earth: #d19a64;
+  --bamboo: #99c58a;
+  --clay: #c87956;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--shell);
+  color: var(--ink);
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 12% 5%, rgba(0, 166, 166, 0.18), transparent 26rem),
+    radial-gradient(circle at 82% 12%, rgba(244, 200, 102, 0.28), transparent 24rem),
+    linear-gradient(180deg, #fffdf6 0%, var(--shell) 42%, #f4f0e4 100%);
+  color: var(--ink);
+  font-family: var(--font-sans), Arial, sans-serif;
+  font-size: calc(16px * var(--font-scale));
+}
+
+:root[data-theme="tunnel"] body {
+  background:
+    radial-gradient(circle at 20% 0%, rgba(84, 199, 211, 0.15), transparent 25rem),
+    radial-gradient(circle at 70% 20%, rgba(123, 77, 49, 0.45), transparent 22rem),
+    linear-gradient(180deg, #20160f 0%, var(--shell) 58%, #0f0b08 100%);
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a {
+  touch-action: manipulation;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--sand);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--sand);
+  color: #172033;
+}
+
+.heritage-title {
+  font-family: var(--font-serif), Georgia, serif;
+}
+
+.wave-divider {
+  --wave: var(--shell);
+  position: relative;
+}
+
+.wave-divider::after {
+  background:
+    radial-gradient(52px 28px at 50% -4px, transparent 97%, var(--wave) 100%) repeat-x;
+  background-size: 84px 36px;
+  bottom: -1px;
+  content: "";
+  height: 36px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.fade-in {
+  animation: fade-in 0.7s ease both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,306 @@
+{
+  "site": {
+    "name": {
+      "vi": "Địa đạo Kỳ Anh Audio Guide",
+      "en": "Ky Anh Underground Tunnel Audio Guide"
+    },
+    "tagline": {
+      "vi": "Hành trình lắng nghe lịch sử dưới lòng đất xứ Quảng",
+      "en": "A listening journey through the underground history of Quang Nam"
+    },
+    "description": {
+      "vi": "Website hướng dẫn tham quan tự động cho Di tích Địa đạo Kỳ Anh, hỗ trợ khách quét QR để nghe audio, đọc tóm tắt, xem bản đồ tuyến và gửi phản hồi.",
+      "en": "A browser-based audio guide for the Ky Anh tunnels, helping visitors scan QR codes, listen to stories, read short summaries, follow the route map and leave feedback."
+    }
+  },
+  "stops": [
+    {
+      "id": 1,
+      "slug": "entrance-historical-context",
+      "title": {
+        "vi": "Cổng vào & Bối cảnh lịch sử",
+        "en": "Entrance & Historical Context"
+      },
+      "subtitle": {
+        "vi": "Bước xuống một thế giới ngầm từng bảo vệ làng quê ven biển.",
+        "en": "Step toward an underground world that once protected a coastal village."
+      },
+      "summary": {
+        "vi": "Bạn đang đứng trước lối vào một thế giới ngầm từng che chở cho quân và dân địa phương trong những năm tháng khốc liệt. Địa đạo Kỳ Anh được khởi công từ giữa năm 1965, dài khoảng 32 km, len lỏi dưới nhà dân, vườn tược, đống rơm và bụi tre.",
+        "en": "You are standing at the entrance to an underground world that once sheltered local people and resistance forces. Begun in mid-1965, the Ky Anh tunnel network stretched around 32 kilometres beneath homes, gardens, straw piles and bamboo groves."
+      },
+      "transcript": {
+        "vi": "Xin chào quý khách. Điểm dừng đầu tiên đưa chúng ta đến cổng vào Địa đạo Kỳ Anh. Trước mắt quý khách không chỉ là một lối xuống lòng đất, mà là cánh cửa mở vào ký ức của một vùng quê ven biển xứ Quảng. Giữa năm 1965, trong điều kiện chiến tranh ác liệt, người dân và lực lượng cách mạng nơi đây bắt đầu xây dựng hệ thống địa đạo dài khoảng ba mươi hai ki-lô-mét. Những đường hầm len lỏi dưới nhà dân, vườn tược, đống rơm và bụi tre, vừa kín đáo vừa gần gũi với đời sống thường ngày. Khi nghe câu chuyện tại điểm dừng này, xin quý khách đi chậm, quan sát lối chỉ dẫn và hình dung một cộng đồng đã dùng trí tuệ, lòng bền bỉ và tình làng nghĩa xóm để tạo nên không gian trú ẩn dưới lòng đất.",
+        "en": "Welcome to the first stop of the Ky Anh tunnel audio guide. This entrance is more than a path underground; it is a doorway into the memory of a coastal village in Quang Nam. In mid-1965, during a period of intense conflict, local people and resistance forces began building a tunnel network that would stretch around thirty-two kilometres. The passages ran beneath homes, gardens, straw piles and bamboo groves, hidden inside the familiar landscape of daily life. As you listen here, please move slowly, follow the marked path and imagine a community using patience, intelligence and solidarity to create a shelter beneath the ground."
+      },
+      "location": {
+        "vi": "Khu vực cổng vào tuyến tham quan, nơi khách nhận diện tổng quan về di tích trước khi đi sâu vào các điểm dừng.",
+        "en": "The entrance area of the visitor route, where guests gain an overview before continuing to the deeper stops."
+      },
+      "highlights": {
+        "vi": [
+          "Địa đạo bắt đầu xây dựng từ giữa năm 1965.",
+          "Hệ thống dài khoảng 32 km.",
+          "Đường hầm ẩn dưới không gian sinh hoạt bình thường của làng quê."
+        ],
+        "en": [
+          "Construction began in mid-1965.",
+          "The network stretched around 32 kilometres.",
+          "The tunnels were hidden under ordinary village spaces."
+        ]
+      },
+      "reflection": {
+        "vi": "Khi đứng tại lối vào, hãy tự hỏi: một cộng đồng cần bao nhiêu niềm tin để tạo ra cả một thế giới trú ẩn dưới lòng đất?",
+        "en": "At the entrance, consider this: how much trust does a community need to build an entire hidden world underground?"
+      },
+      "duration": "1:45",
+      "image": "/images/tunnel-entrance.svg",
+      "audio": {
+        "vi": "/audio/stop1_vi.m4a",
+        "en": "/audio/stop1_en.m4a"
+      },
+      "qrPath": "/stops/1",
+      "mapPosition": { "x": 12, "y": 78 }
+    },
+    {
+      "id": 2,
+      "slug": "construction-story",
+      "title": {
+        "vi": "Câu chuyện xây dựng",
+        "en": "Construction Story"
+      },
+      "subtitle": {
+        "vi": "Những đường hầm được tạo nên từ búa, đục và đôi tay bền bỉ.",
+        "en": "Tunnels shaped by hammers, chisels and determined hands."
+      },
+      "summary": {
+        "vi": "Không có máy móc hiện đại, người dân và cán bộ cách mạng đã đào địa đạo bằng búa, đục và đôi bàn tay bền bỉ. Những đường hầm hẹp chỉ 50–80 cm vừa để ẩn náu, vừa là một cách phòng thủ thông minh.",
+        "en": "With no modern machinery, villagers and revolutionary cadres carved the tunnels by hand using hammers and chisels. The narrow passages, only 50–80 centimetres wide, served both as shelter and as a clever defensive design."
+      },
+      "transcript": {
+        "vi": "Tại điểm dừng thứ hai, chúng ta lắng nghe câu chuyện xây dựng địa đạo. Không có máy xúc, không có thiết bị hiện đại, người dân địa phương và cán bộ cách mạng đã dùng búa, đục, cuốc nhỏ và đôi tay bền bỉ để đào từng đoạn hầm. Công việc thường diễn ra bí mật, kiên trì và phải tính toán cẩn thận để tránh bị phát hiện. Nhiều đoạn hầm chỉ rộng khoảng năm mươi đến tám mươi xăng-ti-mét. Kích thước nhỏ giúp người trong địa đạo di chuyển, trú ẩn và phòng thủ hiệu quả hơn, đồng thời gây khó khăn cho việc truy đuổi. Mỗi nhát đục không chỉ tạo ra đất đá, mà còn tạo ra một cơ hội sống cho cả cộng đồng.",
+        "en": "At the second stop, we listen to the construction story. There were no excavators and no modern machines. Local villagers and revolutionary cadres used hammers, chisels, small hoes and persistent hands to dig the tunnels section by section. The work had to be secret, patient and carefully planned to avoid detection. Many passages were only fifty to eighty centimetres wide. This narrow design allowed people inside to move, hide and defend themselves more effectively, while making pursuit difficult. Every strike of a chisel was not just an act of digging; it was a small act of survival for the community."
+      },
+      "location": {
+        "vi": "Khu vực mô tả kỹ thuật đào và cấu trúc hầm hẹp.",
+        "en": "The section explaining hand-dug construction and narrow tunnel structure."
+      },
+      "highlights": {
+        "vi": [
+          "Đào thủ công bằng búa, đục và dụng cụ đơn giản.",
+          "Lòng hầm hẹp khoảng 50–80 cm.",
+          "Thiết kế nhỏ là một phần của chiến thuật phòng thủ."
+        ],
+        "en": [
+          "Hand-dug with hammers, chisels and simple tools.",
+          "Passages were around 50–80 cm wide.",
+          "The narrow design formed part of the defensive strategy."
+        ]
+      },
+      "reflection": {
+        "vi": "Hãy thử hình dung việc đào từng mét đất trong im lặng, dưới áp lực nguy hiểm luôn cận kề.",
+        "en": "Imagine digging each metre of earth in silence, under constant danger."
+      },
+      "duration": "1:50",
+      "image": "/images/bamboo-village.svg",
+      "audio": {
+        "vi": "/audio/stop2_vi.m4a",
+        "en": "/audio/stop2_en.m4a"
+      },
+      "qrPath": "/stops/2",
+      "mapPosition": { "x": 28, "y": 64 }
+    },
+    {
+      "id": 3,
+      "slug": "underground-life",
+      "title": {
+        "vi": "Cuộc sống dưới lòng đất",
+        "en": "Underground Life"
+      },
+      "subtitle": {
+        "vi": "Một không gian sống, chữa trị, hội họp và liên lạc trong lòng đất.",
+        "en": "A hidden space for living, healing, meeting and communication."
+      },
+      "summary": {
+        "vi": "Địa đạo không chỉ là nơi trú ẩn mà còn là một không gian sống đặc biệt dưới lòng đất. Nơi đây từng có trạm xá, kho lương thực, nơi hội họp và các tuyến liên lạc phục vụ chiến đấu.",
+        "en": "The tunnels were not only a shelter, but also a hidden living space underground. They included medical areas, food storage, meeting points and communication routes that supported daily survival and resistance."
+      },
+      "transcript": {
+        "vi": "Điểm dừng thứ ba kể về đời sống dưới lòng đất. Địa đạo Kỳ Anh không đơn thuần là nơi ẩn nấp tạm thời. Trong những giai đoạn căng thẳng, nơi đây trở thành một không gian sống đặc biệt. Có khu vực dùng làm trạm xá để sơ cứu và chăm sóc người bị thương, có nơi cất giữ lương thực, có điểm hội họp và những tuyến liên lạc giúp thông tin được truyền đi. Cuộc sống trong lòng đất rất thiếu thốn: ánh sáng ít, không khí hạn chế, tiếng động phải được kiểm soát. Nhưng chính trong điều kiện ấy, tình đoàn kết và khả năng thích nghi của người dân hiện lên rất rõ. Mỗi góc hầm là một phần ký ức về sự chịu đựng và niềm hy vọng.",
+        "en": "The third stop tells the story of life underground. The Ky Anh tunnels were not simply temporary hiding places. During difficult periods, they became a special living environment. Some areas served as medical points for first aid and care, others stored food, hosted meetings or connected communication routes. Life underground was full of hardship: little light, limited air and strict control of noise. Yet in these conditions, the solidarity and adaptability of local people became especially clear. Every corner of the tunnel carries a memory of endurance and hope."
+      },
+      "location": {
+        "vi": "Khu vực gợi lại đời sống sinh hoạt, trạm xá, kho lương và nơi hội họp trong địa đạo.",
+        "en": "The area evoking daily life, medical points, food storage and meeting spaces underground."
+      },
+      "highlights": {
+        "vi": [
+          "Địa đạo là không gian sống, không chỉ là nơi trú ẩn.",
+          "Từng có trạm xá, kho lương thực và điểm hội họp.",
+          "Điều kiện sống thiếu sáng, thiếu khí và phải giữ im lặng."
+        ],
+        "en": [
+          "The tunnels were living spaces, not only shelters.",
+          "They included medical areas, food stores and meeting points.",
+          "Conditions involved low light, limited air and careful silence."
+        ]
+      },
+      "reflection": {
+        "vi": "Nếu phải sống trong không gian hẹp và tối, điều gì giúp con người giữ được niềm tin?",
+        "en": "If you had to live in a narrow and dark space, what would help you keep hope?"
+      },
+      "duration": "1:55",
+      "image": "/images/underground-life.svg",
+      "audio": {
+        "vi": "/audio/stop3_vi.m4a",
+        "en": "/audio/stop3_en.m4a"
+      },
+      "qrPath": "/stops/3",
+      "mapPosition": { "x": 44, "y": 50 }
+    },
+    {
+      "id": 4,
+      "slug": "warning-system",
+      "title": {
+        "vi": "Hệ thống cảnh báo",
+        "en": "The Warning System"
+      },
+      "subtitle": {
+        "vi": "Sinh tồn dưới lòng đất bắt đầu từ việc phát hiện nguy hiểm thật sớm.",
+        "en": "Underground survival began with detecting danger early."
+      },
+      "summary": {
+        "vi": "Trong lòng đất, sự sống phụ thuộc vào khả năng phát hiện nguy hiểm từ rất sớm. Các tín hiệu cảnh báo, lối thoát bí mật và sự phối hợp của người dân tạo nên một mạng lưới phòng vệ bền bỉ.",
+        "en": "Underground survival depended on detecting danger early. Warning signals, hidden exits and close coordination among villagers formed a resilient defence network."
+      },
+      "transcript": {
+        "vi": "Điểm dừng thứ tư giới thiệu hệ thống cảnh báo. Trong lòng đất, chỉ một âm thanh lạ hoặc một dấu hiệu bất thường cũng có thể quyết định sự an toàn của nhiều người. Vì vậy, người dân đã hình thành các cách báo động kín đáo, phối hợp giữa người trên mặt đất và người dưới hầm. Những lối thoát bí mật, điểm quan sát và tín hiệu truyền tin giúp cộng đồng phản ứng nhanh trước nguy hiểm. Điều đáng chú ý là hệ thống ấy không chỉ dựa vào cấu trúc địa đạo, mà còn dựa vào sự tin cậy giữa con người với nhau. Một mạng lưới phòng vệ bền bỉ được tạo nên từ cảnh giác, kỷ luật và trách nhiệm chung.",
+        "en": "The fourth stop introduces the warning system. Underground, a strange sound or unusual sign could affect the safety of many people. Local villagers developed discreet warning methods that connected people above ground with those inside the tunnels. Hidden exits, observation points and communication signals helped the community respond quickly to danger. What is remarkable is that this system relied not only on the physical tunnel structure, but also on trust among people. A resilient defence network was built from alertness, discipline and shared responsibility."
+      },
+      "location": {
+        "vi": "Khu mô tả tín hiệu cảnh báo, lối thoát bí mật và sự phối hợp của người dân.",
+        "en": "The section describing warning signals, hidden exits and community coordination."
+      },
+      "highlights": {
+        "vi": [
+          "Cảnh báo sớm là yếu tố sống còn.",
+          "Có lối thoát và điểm truyền tin bí mật.",
+          "Sự phối hợp cộng đồng quan trọng như chính đường hầm."
+        ],
+        "en": [
+          "Early warning was essential to survival.",
+          "Hidden exits and communication points supported safety.",
+          "Community coordination was as important as the tunnels themselves."
+        ]
+      },
+      "reflection": {
+        "vi": "Một hệ thống cảnh báo tốt cần kỹ thuật, nhưng cũng cần niềm tin giữa những người cùng bảo vệ nhau.",
+        "en": "A good warning system needs technique, but it also needs trust among people protecting one another."
+      },
+      "duration": "1:40",
+      "image": "/images/warning-system.svg",
+      "audio": {
+        "vi": "/audio/stop4_vi.m4a",
+        "en": "/audio/stop4_en.m4a"
+      },
+      "qrPath": "/stops/4",
+      "mapPosition": { "x": 60, "y": 38 }
+    },
+    {
+      "id": 5,
+      "slug": "strategic-significance",
+      "title": {
+        "vi": "Vị trí chiến lược",
+        "en": "Strategic Significance"
+      },
+      "subtitle": {
+        "vi": "Một điểm tựa chiến lược giữa vùng đồng bằng ven biển.",
+        "en": "A strategic stronghold in the coastal lowlands."
+      },
+      "summary": {
+        "vi": "Địa đạo Kỳ Anh nằm trong vùng đồng bằng ven biển, không có núi rừng che chắn, lại gần khu vực địch kiểm soát. Chính vị trí ấy khiến công trình trở thành một điểm tựa chiến lược đặc biệt.",
+        "en": "Located in the coastal lowlands without mountains or forests for cover, the Ky Anh tunnels stood close to enemy-controlled areas. This made the network a uniquely strategic stronghold."
+      },
+      "transcript": {
+        "vi": "Điểm dừng thứ năm giúp chúng ta hiểu ý nghĩa chiến lược của Địa đạo Kỳ Anh. Khác với nhiều căn cứ nằm trong núi rừng, địa đạo này tồn tại giữa vùng đồng bằng ven biển. Không có địa hình cao che chắn, không có rừng rậm bao bọc, lại gần các khu vực bị kiểm soát. Chính vì vậy, việc xây dựng một hệ thống ngầm ngay trong lòng làng quê là một lựa chọn sáng tạo và táo bạo. Địa đạo giúp che giấu lực lượng, bảo vệ dân, duy trì liên lạc và tạo điểm tựa cho hoạt động cách mạng. Khi đứng tại đây, quý khách có thể cảm nhận rõ hơn giá trị của trí tuệ địa phương: biến một vùng đất tưởng như trống trải thành không gian phòng vệ hiệu quả.",
+        "en": "The fifth stop helps us understand the strategic significance of the Ky Anh tunnels. Unlike many bases located in mountains or forests, this network existed in the coastal lowlands. There were no high mountains for cover and no dense forests for concealment. The tunnels also lay close to controlled areas. For this reason, building an underground system inside the village landscape was both creative and bold. The network helped hide forces, protect civilians, maintain communication and support resistance activities. Standing here, visitors can better appreciate local ingenuity: turning an exposed landscape into an effective defensive space."
+      },
+      "location": {
+        "vi": "Khu nhìn nhận địa đạo trong bối cảnh đồng bằng ven biển và vị trí gần vùng kiểm soát.",
+        "en": "The area interpreting the tunnels within the coastal lowland setting and nearby controlled zones."
+      },
+      "highlights": {
+        "vi": [
+          "Nằm ở đồng bằng ven biển, thiếu địa hình che chắn.",
+          "Gần khu vực địch kiểm soát.",
+          "Biến làng quê thành không gian chiến lược dưới lòng đất."
+        ],
+        "en": [
+          "Located in coastal lowlands with little natural cover.",
+          "Close to enemy-controlled areas.",
+          "Turned the village landscape into a strategic underground space."
+        ]
+      },
+      "reflection": {
+        "vi": "Đôi khi sức mạnh chiến lược không nằm ở địa hình hiểm trở, mà nằm ở cách con người đọc và biến đổi không gian sống của mình.",
+        "en": "Strategic strength does not always come from rugged terrain; sometimes it comes from how people understand and transform their own living space."
+      },
+      "duration": "1:50",
+      "image": "/images/strategic-map.svg",
+      "audio": {
+        "vi": "/audio/stop5_vi.m4a",
+        "en": "/audio/stop5_en.m4a"
+      },
+      "qrPath": "/stops/5",
+      "mapPosition": { "x": 75, "y": 28 }
+    },
+    {
+      "id": 6,
+      "slug": "legacy-recognition",
+      "title": {
+        "vi": "Di sản và công nhận",
+        "en": "Legacy & Recognition"
+      },
+      "subtitle": {
+        "vi": "Ký ức về lòng dũng cảm, sáng tạo và sức chịu đựng phi thường.",
+        "en": "A memory of courage, ingenuity and extraordinary endurance."
+      },
+      "summary": {
+        "vi": "Hôm nay, Địa đạo Kỳ Anh là một Di tích Lịch sử Quốc gia, lưu giữ ký ức về lòng dũng cảm, sự sáng tạo và sức chịu đựng phi thường của người dân xứ Quảng.",
+        "en": "Today, the Ky Anh tunnels are recognised as a National Historical Site, preserving the memory of courage, ingenuity and extraordinary endurance among the people of Quang Nam."
+      },
+      "transcript": {
+        "vi": "Điểm dừng cuối cùng là nơi chúng ta nhìn lại di sản của Địa đạo Kỳ Anh. Hôm nay, địa đạo được công nhận là Di tích Lịch sử Quốc gia. Giá trị của di tích không chỉ nằm ở những đường hầm còn lại, mà còn ở câu chuyện về con người: những người đã sống, chiến đấu, bảo vệ nhau và gìn giữ ký ức cho thế hệ sau. Khi rời khỏi tuyến tham quan, xin quý khách dành một phút để nghĩ về lòng dũng cảm, sự sáng tạo và sức chịu đựng phi thường của người dân xứ Quảng. Di sản chỉ thật sự sống khi được lắng nghe, được kể lại và được tôn trọng bởi những người hôm nay.",
+        "en": "The final stop invites us to reflect on the legacy of the Ky Anh tunnels. Today, the site is recognised as a National Historical Site. Its value lies not only in the remaining passages, but also in the human stories: people who lived, resisted, protected one another and preserved memory for later generations. As you leave the visitor route, please take a moment to think about the courage, ingenuity and extraordinary endurance of the people of Quang Nam. Heritage remains alive when it is listened to, retold and respected by people today."
+      },
+      "location": {
+        "vi": "Khu kết thúc tuyến tham quan, kết nối ký ức lịch sử với trách nhiệm bảo tồn hôm nay.",
+        "en": "The closing area of the route, linking historical memory with today’s responsibility to preserve it."
+      },
+      "highlights": {
+        "vi": [
+          "Được công nhận là Di tích Lịch sử Quốc gia.",
+          "Lưu giữ ký ức cộng đồng xứ Quảng.",
+          "Bảo tồn di tích là tiếp tục kể lại câu chuyện bằng sự tôn trọng."
+        ],
+        "en": [
+          "Recognised as a National Historical Site.",
+          "Preserves community memory in Quang Nam.",
+          "Preservation means retelling the story with respect."
+        ]
+      },
+      "reflection": {
+        "vi": "Khi rời nơi này, bạn sẽ mang theo câu chuyện nào để kể lại cho người khác?",
+        "en": "As you leave, what story will you carry forward and share with others?"
+      },
+      "duration": "1:45",
+      "image": "/images/heritage.svg",
+      "audio": {
+        "vi": "/audio/stop6_vi.m4a",
+        "en": "/audio/stop6_en.m4a"
+      },
+      "qrPath": "/stops/6",
+      "mapPosition": { "x": 88, "y": 18 }
+    }
+  ]
+}
