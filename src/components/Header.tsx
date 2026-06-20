@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Compass, Menu } from "lucide-react";
+import { Compass } from "lucide-react";
 import { FontSizeControl } from "./FontSizeControl";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { ThemeToggle } from "./ThemeToggle";
@@ -23,11 +23,11 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--shell)]/90 backdrop-blur-xl">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex min-h-11 items-center gap-3 rounded-full pr-2" aria-label="Home">
+        <Link href="/" className="flex min-h-11 min-w-0 items-center gap-3 rounded-full pr-2" aria-label="Home">
           <span className="grid size-11 place-items-center rounded-2xl bg-[var(--ocean)] text-white shadow-lg">
             <Compass aria-hidden className="size-5" />
           </span>
-          <span className="leading-tight">
+          <span className="hidden leading-tight min-[380px]:block">
             <span className="block text-sm font-black tracking-wide text-[var(--ink)]">Kỳ Anh</span>
             <span className="block text-xs font-semibold text-[var(--muted)]">Audio Guide</span>
           </span>
@@ -51,19 +51,10 @@ export function Header() {
           <FontSizeControl />
         </div>
 
-        <Link
-          href="/stops"
-          className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[var(--earth)] px-4 text-sm font-bold text-white shadow-sm md:hidden"
-          aria-label={lang === "vi" ? "Mở danh sách điểm dừng" : "Open stops list"}
-        >
-          <Menu aria-hidden className="size-4" />
-          {lang === "vi" ? "Điểm" : "Stops"}
-        </Link>
-      </div>
-      <div className="flex gap-2 overflow-x-auto px-4 pb-3 md:hidden">
-        <LanguageSwitcher compact />
-        <ThemeToggle />
-        <FontSizeControl />
+        <div className="ml-auto flex shrink-0 items-center gap-2 md:hidden" aria-label={lang === "vi" ? "Tùy chọn hiển thị" : "Display options"}>
+          <LanguageSwitcher compact />
+          <FontSizeControl compact />
+        </div>
       </div>
     </header>
   );

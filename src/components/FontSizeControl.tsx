@@ -3,7 +3,7 @@
 import { Type } from "lucide-react";
 import { usePreferences } from "./PreferenceProvider";
 
-export function FontSizeControl() {
+export function FontSizeControl({ compact = false }: { compact?: boolean }) {
   const { decreaseFont, increaseFont, fontScale } = usePreferences();
 
   return (
@@ -11,7 +11,7 @@ export function FontSizeControl() {
       className="inline-flex min-h-11 items-center gap-1 rounded-full border border-[var(--line)] bg-white/80 p-1 shadow-sm tunnel:bg-stone-950/70"
       aria-label="Font size controls"
     >
-      <Type aria-hidden className="ml-2 size-4 text-[var(--muted)]" />
+      {!compact && <Type aria-hidden className="ml-2 size-4 text-[var(--muted)]" />}
       <button
         type="button"
         onClick={decreaseFont}

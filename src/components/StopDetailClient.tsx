@@ -17,7 +17,7 @@ export function StopDetailClient({ stop, previous, next }: { stop: Stop; previou
         <Image src={stop.image} alt={`${stop.title.vi} / ${stop.title.en}`} fill priority className="object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/30 to-black/15" />
         <div className="relative mx-auto flex min-h-[56vh] max-w-7xl flex-col justify-end px-4 pb-10 pt-20 text-white sm:px-6 lg:px-8">
-          <div className="mb-4 flex">
+          <div className="mb-4 hidden md:flex">
             <LanguageSwitcher />
           </div>
           <p className="text-sm font-black uppercase tracking-[0.25em] text-[var(--sand)]">
