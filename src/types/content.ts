@@ -59,6 +59,11 @@ export type FeedbackPayload = {
   message: string;
 };
 
+export type FeedbackRecord = FeedbackPayload & {
+  id: string;
+  createdAt: string;
+};
+
 export type VisitPayload = {
   path: string;
   title?: string;

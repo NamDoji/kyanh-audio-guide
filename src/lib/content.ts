@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-import type { FeedbackPayload, NewsPost, SiteContent, Stop, VisitPayload, VisitRecord } from "@/types/content";
+import type { FeedbackPayload, FeedbackRecord, NewsPost, SiteContent, Stop, VisitPayload, VisitRecord } from "@/types/content";
 
 const dataDir = path.join(process.cwd(), "data");
 const stopsPath = path.join(dataDir, "stops.json");
@@ -121,6 +121,7 @@ export async function deleteNewsPost(id: number): Promise<void> {
 export async function appendFeedback(payload: FeedbackPayload): Promise<void> {
   await fs.mkdir(dataDir, { recursive: true });
   const record = {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     ...payload,
     createdAt: new Date().toISOString(),
   };
@@ -141,7 +142,21 @@ async function readJsonLines<T>(filePath: string): Promise<T[]> {
 }
 
 export async function getFeedbackRecords() {
-  return readJsonLines<FeedbackPayload & { createdAt: string }>(feedbackPath);
+  const records = await readJsonLines<Partial<FeedbackRecord> & FeedbackPayload & { createdAt: string }>(feedbackPath);
+  return records.map((record, index) => ({
+    ...record,
+    id: record.id ?? `${record.createdAt}-${index}`,
+  }));
+}
+
+export async function deleteFeedbackRecord(id: string): Promise<boolean> {
+  const records = await getFeedbackRecords();
+  const next = records.filter((record) => record.id !== id);
+  if (next.length === records.length) return false;
+
+  await fs.mkdir(dataDir, { recursive: true });
+  await fs.writeFile(feedbackPath, next.map((record) => `${JSON.stringify(record)}`).join("\n") + (next.length ? "\n" : ""), "utf8");
+  return true;
 }
 
 export async function appendVisit(payload: VisitPayload, request: Request): Promise<void> {

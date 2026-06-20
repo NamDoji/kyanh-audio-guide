@@ -11,6 +11,7 @@ import {
   ImageIcon,
   LayoutDashboard,
   LogOut,
+  MessageSquareText,
   Mic2,
   Newspaper,
   Pencil,
@@ -21,10 +22,10 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import type { FeedbackPayload, NewsPost, SiteContent, Stop } from "@/types/content";
+import type { FeedbackRecord, NewsPost, SiteContent, Stop } from "@/types/content";
 
 type Lang = "vi" | "en";
-type AdminTab = "stops" | "news" | "qr" | "stats" | "site";
+type AdminTab = "stops" | "news" | "feedback" | "qr" | "stats" | "site";
 
 type StatsPayload = {
   totalVisits: number;
@@ -34,7 +35,7 @@ type StatsPayload = {
   topPaths: { path: string; count: number }[];
   stopVisits: { stopId: number; count: number }[];
   dailyVisits: { date: string; count: number }[];
-  latestFeedback: (FeedbackPayload & { createdAt: string })[];
+  latestFeedback: FeedbackRecord[];
 };
 
 function Field({
@@ -631,6 +632,119 @@ function StatsPanel({ stops }: { stops: Stop[] }) {
   );
 }
 
+function FeedbackManager() {
+  const [feedback, setFeedback] = useState<FeedbackRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [msg, setMsg] = useState("");
+
+  const loadFeedback = useCallback(async () => {
+    setLoading(true);
+    const res = await fetch("/api/admin/feedback");
+    if (res.ok) {
+      setFeedback((await res.json()) as FeedbackRecord[]);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/admin/feedback")
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (active) setFeedback(data as FeedbackRecord[]);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const remove = async (item: FeedbackRecord) => {
+    if (!confirm(`Xoa phan hoi cua "${item.name}"?`)) return;
+    const res = await fetch(`/api/admin/feedback/${encodeURIComponent(item.id)}`, { method: "DELETE" });
+    if (res.ok) {
+      setFeedback((prev) => prev.filter((record) => record.id !== item.id));
+      setMsg("Da xoa phan hoi");
+    } else {
+      setMsg("Xoa phan hoi that bai");
+    }
+  };
+
+  const averageRating = feedback.length
+    ? Number((feedback.reduce((sum, item) => sum + Number(item.rating || 0), 0) / feedback.length).toFixed(1))
+    : 0;
+
+  if (loading) return <div className="rounded-2xl bg-white/88 p-8 text-center font-bold text-[var(--muted)]">Dang tai phan hoi...</div>;
+
+  return (
+    <div className="space-y-5">
+      {msg ? <div className="rounded-2xl bg-green-50 px-4 py-3 text-sm font-bold text-green-800">{msg}</div> : null}
+
+      <div className="grid gap-4 md:grid-cols-3">
+        {[
+          ["Tong phan hoi", feedback.length],
+          ["Danh gia TB", averageRating],
+          ["Moi nhat", feedback[0] ? new Date(feedback[0].createdAt).toLocaleDateString("vi-VN") : "-"],
+        ].map(([label, value]) => (
+          <div key={label} className="rounded-2xl bg-white/88 p-5 shadow">
+            <p className="text-xs font-black uppercase tracking-widest text-[var(--muted)]">{label}</p>
+            <p className="mt-2 text-3xl font-black text-[var(--ocean)]">{value}</p>
+          </div>
+        ))}
+      </div>
+
+      <section className="rounded-2xl bg-white/88 p-5 shadow">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Quan ly phan hoi</h3>
+            <p className="mt-1 text-sm text-[var(--muted)]">Xem danh gia, thong tin lien he va xoa phan hoi spam/test.</p>
+          </div>
+          <button type="button" onClick={() => loadFeedback()} className="min-h-10 rounded-full border border-[var(--line)] px-4 text-sm font-black text-[var(--muted)]">
+            Tai lai
+          </button>
+        </div>
+
+        {feedback.length ? (
+          <div className="grid gap-3">
+            {feedback.map((item) => (
+              <article key={item.id} className="rounded-xl bg-[var(--sand-soft)] p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 text-sm font-black text-[var(--ink)]">
+                      <span>{item.name}</span>
+                      <span className="rounded-full bg-white px-2 py-1 text-xs text-[var(--ocean)]">{item.rating}/5</span>
+                      <span className="text-xs text-[var(--muted)]">{new Date(item.createdAt).toLocaleString("vi-VN")}</span>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs font-semibold text-[var(--muted)]">
+                      {item.contact ? <span className="rounded-full bg-white px-2 py-1">Lien he: {item.contact}</span> : null}
+                      {item.nationality ? <span className="rounded-full bg-white px-2 py-1">Quoc tich: {item.nationality}</span> : null}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => remove(item)}
+                    className="grid size-9 shrink-0 place-items-center rounded-full bg-red-50 text-red-700"
+                    aria-label="Xoa phan hoi"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                </div>
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">{item.message}</p>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border-2 border-dashed border-[var(--line)] p-10 text-center text-sm font-bold text-[var(--muted)]">
+            Chua co phan hoi nao.
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
 function SiteSettings({
   site,
   setSite,
@@ -738,6 +852,7 @@ export function AdminDashboard({ content }: { content: SiteContent }) {
   const tabs: { id: AdminTab; label: string; icon: typeof LayoutDashboard }[] = [
     { id: "stops", label: "Diem dung", icon: LayoutDashboard },
     { id: "news", label: "Tin tuc", icon: Newspaper },
+    { id: "feedback", label: "Phan hoi", icon: MessageSquareText },
     { id: "qr", label: "QR code", icon: QrCode },
     { id: "stats", label: "Thong ke", icon: BarChart3 },
     { id: "site", label: "Cau hinh", icon: Settings },
@@ -830,6 +945,7 @@ export function AdminDashboard({ content }: { content: SiteContent }) {
         ) : null}
 
         {tab === "news" ? <NewsEditor posts={news} selectedId={selectedNewsId} setSelectedId={setSelectedNewsId} setPosts={setNews} /> : null}
+        {tab === "feedback" ? <FeedbackManager /> : null}
         {tab === "qr" ? <QRManager stops={stops} /> : null}
         {tab === "stats" ? <StatsPanel stops={stops} /> : null}
         {tab === "site" ? <SiteSettings site={site} setSite={setSite} /> : null}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Home, Map, Newspaper, QrCode, Route } from "lucide-react";
+import { Home, Map, MessageSquareText, Newspaper, QrCode, Route } from "lucide-react";
 import { usePreferences } from "./PreferenceProvider";
 
 const items = [
@@ -10,6 +10,7 @@ const items = [
   { href: "/map", icon: Map, vi: "Map", en: "Map" },
   { href: "/news", icon: Newspaper, vi: "Tin", en: "News" },
   { href: "/qr", icon: QrCode, vi: "QR", en: "QR" },
+  { href: "/feedback", icon: MessageSquareText, vi: "Góp ý", en: "Feedback" },
 ];
 
 export function BottomNav() {
@@ -17,7 +18,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-3 bottom-3 z-50 grid grid-cols-5 rounded-[1.5rem] border border-white/50 bg-white/92 p-1 shadow-2xl backdrop-blur-xl tunnel:border-stone-700 tunnel:bg-stone-950/92 md:hidden"
+      className="fixed inset-x-2 bottom-3 z-50 grid grid-cols-6 rounded-[1.5rem] border border-white/50 bg-white/92 p-1 shadow-2xl backdrop-blur-xl tunnel:border-stone-700 tunnel:bg-stone-950/92 md:hidden"
       aria-label="Mobile bottom navigation"
     >
       {items.map((item) => {
@@ -26,10 +27,10 @@ export function BottomNav() {
           <Link
             key={item.href}
             href={item.href}
-            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[11px] font-bold text-[var(--muted)] transition hover:bg-[var(--sand-soft)] hover:text-[var(--ocean)]"
+            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[10px] font-bold text-[var(--muted)] transition hover:bg-[var(--sand-soft)] hover:text-[var(--ocean)] min-[390px]:text-[11px]"
           >
-            <Icon aria-hidden className="size-5" />
-            <span>{item[lang]}</span>
+            <Icon aria-hidden className="size-5 shrink-0" />
+            <span className="max-w-full truncate px-0.5">{item[lang]}</span>
           </Link>
         );
       })}
