@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Home, Map, MessageSquare, QrCode, Route } from "lucide-react";
+import { Home, Map, Newspaper, QrCode, Route } from "lucide-react";
 import { usePreferences } from "./PreferenceProvider";
 
 const items = [
   { href: "/", icon: Home, vi: "Home", en: "Home" },
   { href: "/stops", icon: Route, vi: "Điểm", en: "Stops" },
   { href: "/map", icon: Map, vi: "Map", en: "Map" },
+  { href: "/news", icon: Newspaper, vi: "Tin", en: "News" },
   { href: "/qr", icon: QrCode, vi: "QR", en: "QR" },
-  { href: "/feedback", icon: MessageSquare, vi: "Góp ý", en: "Feedback" },
 ];
 
 export function BottomNav() {

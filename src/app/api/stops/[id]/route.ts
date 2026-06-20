@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
-import { getContent, updateStop } from "@/lib/content";
+import { getContent, saveContent, updateStop } from "@/lib/content";
 import { isAdminAuthenticated } from "@/lib/auth";
-import { promises as fs } from "fs";
-import path from "path";
 import type { Stop } from "@/types/content";
-
-const stopsPath = path.join(process.cwd(), "data", "stops.json");
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -45,6 +41,6 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   if (index < 0) return NextResponse.json({ message: "Not found" }, { status: 404 });
 
   content.stops.splice(index, 1);
-  await fs.writeFile(stopsPath, `${JSON.stringify(content, null, 2)}\n`, "utf8");
+  await saveContent(content);
   return NextResponse.json({ ok: true });
 }

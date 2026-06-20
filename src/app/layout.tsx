@@ -3,6 +3,7 @@ import { Be_Vietnam_Pro, Merriweather } from "next/font/google";
 import { BottomNav } from "@/components/BottomNav";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { PreferenceProvider } from "@/components/PreferenceProvider";
 import "./globals.css";
 
@@ -50,6 +51,7 @@ export default function RootLayout({
     <html lang="vi" className={`${sans.variable} ${serif.variable}`}>
       <body>
         <PreferenceProvider>
+          <AnalyticsTracker />
           <Header />
           <main>{children}</main>
           <Footer />

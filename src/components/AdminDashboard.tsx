@@ -1,22 +1,56 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
-import {
-  ChevronRight, FilePlus, LogOut, Mic2,
-  Pencil, PlayCircle, Save, Trash2, Upload, ImageIcon,
-} from "lucide-react";
-import type { SiteContent, Stop } from "@/types/content";
+import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-// ─── small helpers ────────────────────────────────────────────────────────────
+import { QRCodeCanvas } from "qrcode.react";
+import {
+  BarChart3,
+  ChevronRight,
+  FilePlus,
+  ImageIcon,
+  LayoutDashboard,
+  LogOut,
+  Mic2,
+  Newspaper,
+  Pencil,
+  PlayCircle,
+  QrCode,
+  Save,
+  Settings,
+  Trash2,
+  Upload,
+} from "lucide-react";
+import type { FeedbackPayload, NewsPost, SiteContent, Stop } from "@/types/content";
 
 type Lang = "vi" | "en";
+type AdminTab = "stops" | "news" | "qr" | "stats" | "site";
+
+type StatsPayload = {
+  totalVisits: number;
+  todayVisits: number;
+  totalFeedback: number;
+  averageRating: number;
+  topPaths: { path: string; count: number }[];
+  stopVisits: { stopId: number; count: number }[];
+  dailyVisits: { date: string; count: number }[];
+  latestFeedback: (FeedbackPayload & { createdAt: string })[];
+};
 
 function Field({
-  label, value, onChange, multiline = false, rows = 3,
+  label,
+  value,
+  onChange,
+  multiline = false,
+  rows = 3,
+  type = "text",
 }: {
-  label: string; value: string; onChange: (v: string) => void;
-  multiline?: boolean; rows?: number;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  multiline?: boolean;
+  rows?: number;
+  type?: string;
 }) {
   const cls =
     "w-full rounded-xl border border-[var(--line)] bg-[var(--sand-soft)] px-3 py-2 text-sm focus:border-[var(--ocean)] focus:outline-none";
@@ -28,31 +62,46 @@ function Field({
       {multiline ? (
         <textarea rows={rows} className={cls} value={value} onChange={(e) => onChange(e.target.value)} />
       ) : (
-        <input type="text" className={cls} value={value} onChange={(e) => onChange(e.target.value)} />
+        <input type={type} className={cls} value={value} onChange={(e) => onChange(e.target.value)} />
       )}
     </div>
   );
 }
 
 function BilingualField({
-  label, vi, en,
-  onVi, onEn, multiline = false, rows = 3,
+  label,
+  vi,
+  en,
+  onVi,
+  onEn,
+  multiline = false,
+  rows = 3,
 }: {
-  label: string; vi: string; en: string;
-  onVi: (v: string) => void; onEn: (v: string) => void;
-  multiline?: boolean; rows?: number;
+  label: string;
+  vi: string;
+  en: string;
+  onVi: (v: string) => void;
+  onEn: (v: string) => void;
+  multiline?: boolean;
+  rows?: number;
 }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      <Field label={`${label} 🇻🇳`} value={vi} onChange={onVi} multiline={multiline} rows={rows} />
-      <Field label={`${label} 🇬🇧`} value={en} onChange={onEn} multiline={multiline} rows={rows} />
+      <Field label={`${label} VI`} value={vi} onChange={onVi} multiline={multiline} rows={rows} />
+      <Field label={`${label} EN`} value={en} onChange={onEn} multiline={multiline} rows={rows} />
     </div>
   );
 }
 
-// ─── AudioUploader ────────────────────────────────────────────────────────────
-function AudioUploader({ stopId, lang, current, onUploaded }: {
-  stopId: number; lang: Lang; current: string;
+function AudioUploader({
+  stopId,
+  lang,
+  current,
+  onUploaded,
+}: {
+  stopId: number;
+  lang: Lang;
+  current: string;
   onUploaded: (stop: Stop) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -68,34 +117,26 @@ function AudioUploader({ stopId, lang, current, onUploaded }: {
     form.append("lang", lang);
 
     const res = await fetch("/api/admin/upload", { method: "POST", body: form });
-    const data = await res.json() as { ok?: boolean; path?: string; stop?: Stop; message?: string };
+    const data = (await res.json()) as { ok?: boolean; path?: string; stop?: Stop; message?: string };
 
     if (res.ok && data.path && data.stop) {
       onUploaded(data.stop);
-      setMsg(`✅ Đã upload và lưu: ${data.path}`);
+      setMsg(`Da upload va luu: ${data.path}`);
     } else {
-      setMsg(`❌ ${data.message ?? "Upload thất bại"}`);
+      setMsg(data.message ?? "Upload that bai");
     }
     setUploading(false);
-  };
-
-  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) upload(file);
-    e.target.value = "";
   };
 
   return (
     <div className="rounded-xl border border-[var(--line)] bg-[var(--sand-soft)] p-3">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-xs font-black uppercase tracking-wide text-[var(--muted)]">
-            Audio {lang === "vi" ? "🇻🇳" : "🇬🇧"}
-          </p>
+          <p className="text-xs font-black uppercase tracking-wide text-[var(--muted)]">Audio {lang.toUpperCase()}</p>
           <p className="mt-0.5 truncate text-sm font-semibold text-[var(--ink)]">{current}</p>
         </div>
         <div className="flex shrink-0 gap-2">
-          {current && (
+          {current ? (
             <a
               href={current}
               target="_blank"
@@ -105,7 +146,7 @@ function AudioUploader({ stopId, lang, current, onUploaded }: {
             >
               <PlayCircle className="size-5" />
             </a>
-          )}
+          ) : null}
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
@@ -117,13 +158,22 @@ function AudioUploader({ stopId, lang, current, onUploaded }: {
           </button>
         </div>
       </div>
-      {msg && <p className="mt-2 text-xs font-semibold text-[var(--earth)]">{msg}</p>}
-      <input ref={inputRef} type="file" accept=".mp3,.m4a,.ogg,.wav,audio/*" className="sr-only" onChange={onFile} />
+      {msg ? <p className="mt-2 text-xs font-semibold text-[var(--earth)]">{msg}</p> : null}
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".mp3,.m4a,.ogg,.wav,audio/*"
+        className="sr-only"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) upload(file);
+          e.target.value = "";
+        }}
+      />
     </div>
   );
 }
 
-// ─── ImageUploader ─────────────────────────────────────────────────────────────
 function ImageUploader({ stopId, current, onUploaded }: { stopId: number; current: string; onUploaded: (stop: Stop) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -135,9 +185,13 @@ function ImageUploader({ stopId, current, onUploaded }: { stopId: number; curren
     form.append("file", file);
     form.append("stopId", String(stopId));
     const res = await fetch("/api/admin/upload-image", { method: "POST", body: form });
-    const data = await res.json() as { ok?: boolean; path?: string; stop?: Stop; message?: string };
-    if (res.ok && data.path && data.stop) { onUploaded(data.stop); setMsg(`✅ Đã upload và lưu: ${data.path}`); }
-    else setMsg(`❌ ${data.message ?? "Upload thất bại"}`);
+    const data = (await res.json()) as { ok?: boolean; path?: string; stop?: Stop; message?: string };
+    if (res.ok && data.path && data.stop) {
+      onUploaded(data.stop);
+      setMsg(`Da upload va luu: ${data.path}`);
+    } else {
+      setMsg(data.message ?? "Upload that bai");
+    }
     setUploading(false);
   };
 
@@ -145,7 +199,7 @@ function ImageUploader({ stopId, current, onUploaded }: { stopId: number; curren
     <div className="rounded-xl border border-[var(--line)] bg-[var(--sand-soft)] p-3">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-xs font-black uppercase tracking-wide text-[var(--muted)]">Ảnh minh họa</p>
+          <p className="text-xs font-black uppercase tracking-wide text-[var(--muted)]">Anh minh hoa</p>
           <p className="truncate text-sm font-semibold text-[var(--ink)]">{current}</p>
         </div>
         <button
@@ -158,20 +212,38 @@ function ImageUploader({ stopId, current, onUploaded }: { stopId: number; curren
           {uploading ? <span className="size-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <ImageIcon className="size-4" />}
         </button>
       </div>
-      {current && (
+      {current ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={current} alt="preview" className="mt-2 h-24 w-full rounded-xl object-cover" />
-      )}
-      {msg && <p className="mt-1 text-xs font-semibold text-[var(--earth)]">{msg}</p>}
-      <input ref={inputRef} type="file" accept="image/*" className="sr-only" onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+      ) : null}
+      {msg ? <p className="mt-1 text-xs font-semibold text-[var(--earth)]">{msg}</p> : null}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) upload(file);
+          e.target.value = "";
+        }}
+      />
     </div>
   );
 }
 
-// ─── Stop editor panel ────────────────────────────────────────────────────────
-function StopEditor({ stop, onChange, onSave, onDelete, saving }: {
-  stop: Stop; onChange: (patch: Partial<Stop>) => void;
-  onSave: () => void; onDelete: () => void; saving: boolean;
+function StopEditor({
+  stop,
+  onChange,
+  onSave,
+  onDelete,
+  saving,
+}: {
+  stop: Stop;
+  onChange: (patch: Partial<Stop>) => void;
+  onSave: () => void;
+  onDelete: () => void;
+  saving: boolean;
 }) {
   const loc = (field: keyof Stop, lang: Lang) => {
     const val = stop[field] as { vi: string; en: string };
@@ -188,15 +260,6 @@ function StopEditor({ stop, onChange, onSave, onDelete, saving }: {
     onChange({ highlights: { ...stop.highlights, [lang]: arr } });
   };
 
-  const addHighlight = (lang: Lang) => {
-    onChange({ highlights: { ...stop.highlights, [lang]: [...(stop.highlights[lang] ?? []), ""] } });
-  };
-
-  const removeHighlight = (lang: Lang, idx: number) => {
-    const arr = stop.highlights[lang].filter((_, i) => i !== idx);
-    onChange({ highlights: { ...stop.highlights, [lang]: arr } });
-  };
-
   const setMapPosition = (axis: "x" | "y", value: string) => {
     const numeric = Math.max(0, Math.min(100, Number(value) || 0));
     onChange({ mapPosition: { ...stop.mapPosition, [axis]: numeric } });
@@ -204,59 +267,61 @@ function StopEditor({ stop, onChange, onSave, onDelete, saving }: {
 
   return (
     <div className="space-y-6">
-      {/* Basic */}
       <section className="rounded-2xl bg-white/88 p-5 shadow">
-        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">
-          📋 Thông tin cơ bản
-        </h3>
+        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Thong tin diem dung</h3>
         <div className="space-y-4">
-          <Field label="Thời lượng" value={stop.duration} onChange={(v) => onChange({ duration: v })} />
-          <BilingualField label="Tiêu đề" vi={loc("title", "vi")} en={loc("title", "en")} onVi={(v) => setLoc("title", "vi", v)} onEn={(v) => setLoc("title", "en", v)} />
-          <BilingualField label="Phụ đề" vi={loc("subtitle", "vi")} en={loc("subtitle", "en")} onVi={(v) => setLoc("subtitle", "vi", v)} onEn={(v) => setLoc("subtitle", "en", v)} />
-          <BilingualField label="Tóm tắt" vi={loc("summary", "vi")} en={loc("summary", "en")} onVi={(v) => setLoc("summary", "vi", v)} onEn={(v) => setLoc("summary", "en", v)} multiline rows={3} />
-          <BilingualField label="Vị trí" vi={loc("location", "vi")} en={loc("location", "en")} onVi={(v) => setLoc("location", "vi", v)} onEn={(v) => setLoc("location", "en", v)} />
-          <BilingualField label="Suy ngẫm" vi={loc("reflection", "vi")} en={loc("reflection", "en")} onVi={(v) => setLoc("reflection", "vi", v)} onEn={(v) => setLoc("reflection", "en", v)} multiline rows={2} />
+          <Field label="Slug" value={stop.slug} onChange={(v) => onChange({ slug: v })} />
+          <Field label="Thoi luong" value={stop.duration} onChange={(v) => onChange({ duration: v })} />
+          <BilingualField label="Tieu de" vi={loc("title", "vi")} en={loc("title", "en")} onVi={(v) => setLoc("title", "vi", v)} onEn={(v) => setLoc("title", "en", v)} />
+          <BilingualField label="Phu de" vi={loc("subtitle", "vi")} en={loc("subtitle", "en")} onVi={(v) => setLoc("subtitle", "vi", v)} onEn={(v) => setLoc("subtitle", "en", v)} />
+          <BilingualField label="Tom tat" vi={loc("summary", "vi")} en={loc("summary", "en")} onVi={(v) => setLoc("summary", "vi", v)} onEn={(v) => setLoc("summary", "en", v)} multiline />
+          <BilingualField label="Vi tri" vi={loc("location", "vi")} en={loc("location", "en")} onVi={(v) => setLoc("location", "vi", v)} onEn={(v) => setLoc("location", "en", v)} />
+          <BilingualField label="Suy ngam" vi={loc("reflection", "vi")} en={loc("reflection", "en")} onVi={(v) => setLoc("reflection", "vi", v)} onEn={(v) => setLoc("reflection", "en", v)} multiline rows={2} />
         </div>
       </section>
 
-      {/* Transcript */}
       <section className="rounded-2xl bg-white/88 p-5 shadow">
-        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">📜 Transcript audio</h3>
-        <div className="space-y-4">
-          <BilingualField label="Transcript" vi={loc("transcript", "vi")} en={loc("transcript", "en")} onVi={(v) => setLoc("transcript", "vi", v)} onEn={(v) => setLoc("transcript", "en", v)} multiline rows={8} />
-        </div>
+        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Transcript audio</h3>
+        <BilingualField label="Transcript" vi={loc("transcript", "vi")} en={loc("transcript", "en")} onVi={(v) => setLoc("transcript", "vi", v)} onEn={(v) => setLoc("transcript", "en", v)} multiline rows={8} />
       </section>
 
-      {/* Highlights */}
       <section className="rounded-2xl bg-white/88 p-5 shadow">
-        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">✨ Điểm nổi bật</h3>
+        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Diem noi bat</h3>
         {(["vi", "en"] as Lang[]).map((lang) => (
           <div key={lang} className="mb-4">
-            <p className="mb-2 text-xs font-black text-[var(--muted)]">{lang === "vi" ? "🇻🇳 Tiếng Việt" : "🇬🇧 English"}</p>
+            <p className="mb-2 text-xs font-black text-[var(--muted)]">{lang.toUpperCase()}</p>
             {stop.highlights[lang].map((h, i) => (
-              <div key={i} className="mb-2 flex gap-2">
+              <div key={`${lang}-${i}`} className="mb-2 flex gap-2">
                 <input
                   type="text"
                   value={h}
                   onChange={(e) => setHighlight(lang, i, e.target.value)}
                   className="flex-1 rounded-xl border border-[var(--line)] bg-[var(--sand-soft)] px-3 py-2 text-sm focus:outline-none"
                 />
-                <button type="button" onClick={() => removeHighlight(lang, i)} className="grid size-9 place-items-center rounded-full bg-red-50 text-red-700" aria-label="Remove">
+                <button
+                  type="button"
+                  onClick={() => onChange({ highlights: { ...stop.highlights, [lang]: stop.highlights[lang].filter((_, index) => index !== i) } })}
+                  className="grid size-9 place-items-center rounded-full bg-red-50 text-red-700"
+                  aria-label="Remove highlight"
+                >
                   <Trash2 className="size-4" />
                 </button>
               </div>
             ))}
-            <button type="button" onClick={() => addHighlight(lang)} className="mt-1 inline-flex min-h-9 items-center gap-1 rounded-full border border-[var(--line)] px-3 text-xs font-bold">
-              + Thêm mục
+            <button
+              type="button"
+              onClick={() => onChange({ highlights: { ...stop.highlights, [lang]: [...(stop.highlights[lang] ?? []), ""] } })}
+              className="mt-1 inline-flex min-h-9 items-center rounded-full border border-[var(--line)] px-3 text-xs font-bold"
+            >
+              Them muc
             </button>
           </div>
         ))}
       </section>
 
-      {/* Audio upload */}
       <section className="rounded-2xl bg-white/88 p-5 shadow">
-        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">
-          <Mic2 className="mr-1 inline size-4" />
+        <h3 className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">
+          <Mic2 className="size-4" />
           File audio
         </h3>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -265,98 +330,390 @@ function StopEditor({ stop, onChange, onSave, onDelete, saving }: {
         </div>
       </section>
 
-      {/* Image upload */}
       <section className="rounded-2xl bg-white/88 p-5 shadow">
-        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">
-          <ImageIcon className="mr-1 inline size-4" />
-          Ảnh minh họa
+        <h3 className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">
+          <ImageIcon className="size-4" />
+          Anh va ban do
         </h3>
-        <ImageUploader stopId={stop.id} current={stop.image} onUploaded={(updated) => onChange(updated)} />
-      </section>
-
-      {/* Map position */}
-      <section className="rounded-2xl bg-white/88 p-5 shadow">
-        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">
-          Vị trí trên bản đồ
-        </h3>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Tọa độ X (%)" value={String(stop.mapPosition.x)} onChange={(v) => setMapPosition("x", v)} />
-          <Field label="Tọa độ Y (%)" value={String(stop.mapPosition.y)} onChange={(v) => setMapPosition("y", v)} />
+        <div className="grid gap-4 lg:grid-cols-2">
+          <ImageUploader stopId={stop.id} current={stop.image} onUploaded={(updated) => onChange(updated)} />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Toa do X (%)" value={String(stop.mapPosition.x)} onChange={(v) => setMapPosition("x", v)} />
+            <Field label="Toa do Y (%)" value={String(stop.mapPosition.y)} onChange={(v) => setMapPosition("y", v)} />
+          </div>
         </div>
       </section>
 
-      {/* Actions */}
       <div className="flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={onSave}
-          disabled={saving}
-          className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--ocean)] px-6 font-black text-white disabled:opacity-50"
-        >
+        <button type="button" onClick={onSave} disabled={saving} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--ocean)] px-6 font-black text-white disabled:opacity-50">
           <Save className="size-5" />
-          {saving ? "Đang lưu..." : "Lưu thay đổi"}
+          {saving ? "Dang luu..." : "Luu thay doi"}
         </button>
-        <a
-          href={`/stops/${stop.id}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[var(--line)] bg-white px-5 text-sm font-bold"
-        >
-          Xem trang công khai →
-        </a>
-        <button
-          type="button"
-          onClick={onDelete}
-          className="inline-flex min-h-12 items-center gap-2 rounded-full border border-red-200 bg-red-50 px-5 text-sm font-bold text-red-700"
-        >
+        <Link href={`/stops/${stop.id}`} target="_blank" className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[var(--line)] bg-white px-5 text-sm font-bold">
+          Xem public
+        </Link>
+        <button type="button" onClick={onDelete} className="inline-flex min-h-12 items-center gap-2 rounded-full border border-red-200 bg-red-50 px-5 text-sm font-bold text-red-700">
           <Trash2 className="size-4" />
-          Xoá điểm dừng
+          Xoa diem dung
         </button>
       </div>
     </div>
   );
 }
 
-// ─── Main Dashboard ───────────────────────────────────────────────────────────
-export function AdminDashboard({ content }: { content: SiteContent }) {
-  const router = useRouter();
-  const [stops, setStops] = useState<Stop[]>(content.stops);
-  const [selectedId, setSelectedId] = useState<number>(stops[0]?.id ?? 1);
+function NewsEditor({
+  posts,
+  selectedId,
+  setSelectedId,
+  setPosts,
+}: {
+  posts: NewsPost[];
+  selectedId: number;
+  setSelectedId: (id: number) => void;
+  setPosts: React.Dispatch<React.SetStateAction<NewsPost[]>>;
+}) {
   const [saving, setSaving] = useState(false);
-  const [saveMsg, setSaveMsg] = useState("");
-  const [creating, setCreating] = useState(false);
+  const [msg, setMsg] = useState("");
+  const selected = posts.find((post) => post.id === selectedId) ?? posts[0];
 
-  const selected = stops.find((s) => s.id === selectedId);
+  const updatePost = (patch: Partial<NewsPost>) => {
+    if (!selected) return;
+    setPosts((prev) => prev.map((post) => (post.id === selected.id ? { ...post, ...patch } : post)));
+  };
 
-  const updateStop = useCallback((patch: Partial<Stop>) => {
-    setStops((prev) => prev.map((s) => (s.id === selectedId ? { ...s, ...patch } : s)));
-  }, [selectedId]);
+  const setLoc = (field: "title" | "excerpt" | "body", lang: Lang, value: string) => {
+    if (!selected) return;
+    updatePost({ [field]: { ...selected[field], [lang]: value } } as Partial<NewsPost>);
+  };
 
-  const save = async () => {
+  const createPost = async () => {
+    const res = await fetch("/api/admin/news", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    if (res.ok) {
+      const post = (await res.json()) as NewsPost;
+      setPosts((prev) => [post, ...prev]);
+      setSelectedId(post.id);
+    }
+  };
+
+  const savePost = async () => {
     if (!selected) return;
     setSaving(true);
-    setSaveMsg("");
-    const res = await fetch(`/api/stops/${selected.id}`, {
+    setMsg("");
+    const res = await fetch(`/api/admin/news/${selected.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(selected),
     });
     if (res.ok) {
-      setSaveMsg("✅ Đã lưu thành công");
+      const post = (await res.json()) as NewsPost;
+      setPosts((prev) => prev.map((item) => (item.id === post.id ? post : item)));
+      setMsg("Da luu tin tuc");
     } else {
-      setSaveMsg("❌ Lưu thất bại");
+      setMsg("Luu tin tuc that bai");
     }
     setSaving(false);
   };
 
-  const deleteStop = async () => {
-    if (!selected) return;
-    if (!confirm(`Xoá điểm "${selected.title.vi}"? Thao tác không thể hoàn tác.`)) return;
-    const res = await fetch(`/api/stops/${selected.id}`, { method: "DELETE" });
+  const deletePost = async () => {
+    if (!selected || !confirm(`Xoa tin "${selected.title.vi}"?`)) return;
+    const res = await fetch(`/api/admin/news/${selected.id}`, { method: "DELETE" });
     if (res.ok) {
-      const remaining = stops.filter((s) => s.id !== selected.id);
-      setStops(remaining);
+      const remaining = posts.filter((post) => post.id !== selected.id);
+      setPosts(remaining);
       setSelectedId(remaining[0]?.id ?? 0);
+    }
+  };
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+      <aside className="rounded-2xl border border-[var(--line)] bg-white/88 p-2 shadow-lg">
+        <button type="button" onClick={createPost} className="mb-2 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-[var(--bamboo)] px-3 text-sm font-bold text-white">
+          <FilePlus className="size-4" />
+          Them tin tuc
+        </button>
+        {posts.map((post) => (
+          <button
+            key={post.id}
+            type="button"
+            onClick={() => setSelectedId(post.id)}
+            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${selected?.id === post.id ? "bg-[var(--ocean)] text-white" : "hover:bg-[var(--sand-soft)]"}`}
+          >
+            <Newspaper className="size-4 shrink-0" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-bold">{post.title.vi}</span>
+              <span className={`block text-xs ${selected?.id === post.id ? "text-white/70" : "text-[var(--muted)]"}`}>{post.status}</span>
+            </span>
+          </button>
+        ))}
+      </aside>
+
+      <main>
+        {msg ? <div className="mb-4 rounded-2xl bg-green-50 px-4 py-3 text-sm font-bold text-green-800">{msg}</div> : null}
+        {selected ? (
+          <div className="space-y-6">
+            <section className="rounded-2xl bg-white/88 p-5 shadow">
+              <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Noi dung tin tuc</h3>
+              <div className="space-y-4">
+                <Field label="Slug" value={selected.slug} onChange={(v) => updatePost({ slug: v })} />
+                <Field label="Ngay xuat ban" type="datetime-local" value={selected.publishedAt.slice(0, 16)} onChange={(v) => updatePost({ publishedAt: new Date(v).toISOString() })} />
+                <label className="flex items-center gap-3 rounded-xl border border-[var(--line)] bg-[var(--sand-soft)] px-3 py-2 text-sm font-bold">
+                  <input type="checkbox" checked={selected.status === "published"} onChange={(e) => updatePost({ status: e.target.checked ? "published" : "draft" })} />
+                  Xuat ban tin nay
+                </label>
+                <Field label="Anh dai dien" value={selected.image} onChange={(v) => updatePost({ image: v })} />
+                <BilingualField label="Tieu de" vi={selected.title.vi} en={selected.title.en} onVi={(v) => setLoc("title", "vi", v)} onEn={(v) => setLoc("title", "en", v)} />
+                <BilingualField label="Mo ta ngan" vi={selected.excerpt.vi} en={selected.excerpt.en} onVi={(v) => setLoc("excerpt", "vi", v)} onEn={(v) => setLoc("excerpt", "en", v)} multiline />
+                <BilingualField label="Noi dung" vi={selected.body.vi} en={selected.body.en} onVi={(v) => setLoc("body", "vi", v)} onEn={(v) => setLoc("body", "en", v)} multiline rows={10} />
+              </div>
+            </section>
+
+            <div className="flex flex-wrap gap-3">
+              <button type="button" onClick={savePost} disabled={saving} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--ocean)] px-6 font-black text-white disabled:opacity-50">
+                <Save className="size-5" />
+                {saving ? "Dang luu..." : "Luu tin tuc"}
+              </button>
+              {selected.status === "published" ? (
+                <Link href={`/news/${selected.id}`} target="_blank" className="inline-flex min-h-12 items-center rounded-full border border-[var(--line)] bg-white px-5 text-sm font-bold">
+                  Xem public
+                </Link>
+              ) : null}
+              <button type="button" onClick={deletePost} className="inline-flex min-h-12 items-center gap-2 rounded-full border border-red-200 bg-red-50 px-5 text-sm font-bold text-red-700">
+                <Trash2 className="size-4" />
+                Xoa tin
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl border-2 border-dashed border-[var(--line)] p-12 text-center text-[var(--muted)]">
+            Chua co tin tuc. Bam &quot;Them tin tuc&quot; de tao moi.
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+function QRDownloadCard({ stop, baseUrl }: { stop: Stop; baseUrl: string }) {
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const url = `${baseUrl.replace(/\/$/, "")}${stop.qrPath}`;
+
+  const download = () => {
+    const canvas = wrapRef.current?.querySelector("canvas");
+    if (!canvas) return;
+    const anchor = document.createElement("a");
+    anchor.href = canvas.toDataURL("image/png");
+    anchor.download = `ky-anh-stop-${stop.id}-qr.png`;
+    anchor.click();
+  };
+
+  return (
+    <article className="rounded-2xl border border-[var(--line)] bg-white/90 p-5 shadow">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-black uppercase tracking-widest text-[var(--ocean)]">Stop {stop.id}</p>
+          <h3 className="mt-2 text-lg font-black text-[var(--ink)]">{stop.title.vi}</h3>
+        </div>
+        <button type="button" onClick={download} className="grid size-10 place-items-center rounded-full bg-[var(--ocean)] text-white" aria-label="Download QR">
+          <Upload className="size-4" />
+        </button>
+      </div>
+      <div ref={wrapRef} className="mt-4 grid place-items-center rounded-2xl bg-white p-4">
+        <QRCodeCanvas value={url} size={180} includeMargin level="H" />
+      </div>
+      <Link href={stop.qrPath} target="_blank" className="mt-4 block truncate rounded-xl bg-[var(--teal-soft)] px-3 py-2 text-sm font-bold text-[var(--ocean)]">
+        {url}
+      </Link>
+    </article>
+  );
+}
+
+function QRManager({ stops }: { stops: Stop[] }) {
+  const baseUrl = typeof window === "undefined" ? "http://localhost:3000" : window.location.origin;
+
+  return (
+    <div>
+      <div className="mb-5 rounded-2xl bg-white/88 p-5 shadow">
+        <h3 className="text-lg font-black text-[var(--ink)]">Quan ly QR code</h3>
+        <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+          Moi diem dung moi se tu co duong dan QR theo mau /stops/id. Tai PNG de in bien QR ngoai thuc dia.
+        </p>
+        <Link href="/qr" target="_blank" className="mt-4 inline-flex min-h-11 items-center rounded-full bg-[var(--earth)] px-5 text-sm font-black text-white">
+          Mo trang QR public
+        </Link>
+      </div>
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {stops.map((stop) => (
+          <QRDownloadCard key={stop.id} stop={stop} baseUrl={baseUrl} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StatsPanel({ stops }: { stops: Stop[] }) {
+  const [stats, setStats] = useState<StatsPayload | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/admin/stats")
+      .then((res) => res.json())
+      .then((data) => setStats(data as StatsPayload))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="rounded-2xl bg-white/88 p-8 text-center font-bold text-[var(--muted)]">Dang tai thong ke...</div>;
+  if (!stats) return <div className="rounded-2xl bg-red-50 p-8 text-center font-bold text-red-700">Khong tai duoc thong ke</div>;
+
+  const stopTitle = (id: number) => stops.find((stop) => stop.id === id)?.title.vi ?? `Stop ${id}`;
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-4">
+        {[
+          ["Tong truy cap", stats.totalVisits],
+          ["Hom nay", stats.todayVisits],
+          ["Phan hoi", stats.totalFeedback],
+          ["Danh gia TB", stats.averageRating],
+        ].map(([label, value]) => (
+          <div key={label} className="rounded-2xl bg-white/88 p-5 shadow">
+            <p className="text-xs font-black uppercase tracking-widest text-[var(--muted)]">{label}</p>
+            <p className="mt-2 text-3xl font-black text-[var(--ocean)]">{value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className="rounded-2xl bg-white/88 p-5 shadow">
+          <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Trang duoc xem nhieu</h3>
+          <div className="space-y-3">
+            {stats.topPaths.map((item) => (
+              <div key={item.path} className="flex items-center justify-between gap-3 rounded-xl bg-[var(--sand-soft)] px-3 py-2">
+                <span className="truncate text-sm font-bold">{item.path}</span>
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[var(--ocean)]">{item.count}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-2xl bg-white/88 p-5 shadow">
+          <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Luot nghe/xem theo diem</h3>
+          <div className="space-y-3">
+            {stats.stopVisits.map((item) => (
+              <div key={item.stopId} className="flex items-center justify-between gap-3 rounded-xl bg-[var(--sand-soft)] px-3 py-2">
+                <span className="truncate text-sm font-bold">{stopTitle(item.stopId)}</span>
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[var(--ocean)]">{item.count}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <section className="rounded-2xl bg-white/88 p-5 shadow">
+        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Phan hoi moi nhat</h3>
+        <div className="grid gap-3">
+          {stats.latestFeedback.map((item) => (
+            <div key={`${item.createdAt}-${item.name}`} className="rounded-xl bg-[var(--sand-soft)] p-4">
+              <div className="flex flex-wrap items-center gap-2 text-sm font-black text-[var(--ink)]">
+                <span>{item.name}</span>
+                <span className="rounded-full bg-white px-2 py-1 text-xs text-[var(--ocean)]">{item.rating}/5</span>
+                <span className="text-xs text-[var(--muted)]">{new Date(item.createdAt).toLocaleString("vi-VN")}</span>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{item.message}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function SiteSettings({
+  site,
+  setSite,
+}: {
+  site: SiteContent["site"];
+  setSite: React.Dispatch<React.SetStateAction<SiteContent["site"]>>;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const setLoc = (field: keyof SiteContent["site"], lang: Lang, value: string) => {
+    setSite((prev) => ({ ...prev, [field]: { ...prev[field], [lang]: value } }));
+  };
+
+  const save = async () => {
+    setSaving(true);
+    setMsg("");
+    const res = await fetch("/api/admin/site", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(site),
+    });
+    setMsg(res.ok ? "Da luu cau hinh site" : "Luu cau hinh that bai");
+    setSaving(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      {msg ? <div className="rounded-2xl bg-green-50 px-4 py-3 text-sm font-bold text-green-800">{msg}</div> : null}
+      <section className="rounded-2xl bg-white/88 p-5 shadow">
+        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Cau hinh trang chu</h3>
+        <div className="space-y-4">
+          <BilingualField label="Ten site" vi={site.name.vi} en={site.name.en} onVi={(v) => setLoc("name", "vi", v)} onEn={(v) => setLoc("name", "en", v)} />
+          <BilingualField label="Tagline" vi={site.tagline.vi} en={site.tagline.en} onVi={(v) => setLoc("tagline", "vi", v)} onEn={(v) => setLoc("tagline", "en", v)} />
+          <BilingualField label="Mo ta" vi={site.description.vi} en={site.description.en} onVi={(v) => setLoc("description", "vi", v)} onEn={(v) => setLoc("description", "en", v)} multiline rows={4} />
+        </div>
+      </section>
+      <button type="button" onClick={save} disabled={saving} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--ocean)] px-6 font-black text-white disabled:opacity-50">
+        <Save className="size-5" />
+        {saving ? "Dang luu..." : "Luu cau hinh"}
+      </button>
+    </div>
+  );
+}
+
+export function AdminDashboard({ content }: { content: SiteContent }) {
+  const router = useRouter();
+  const [tab, setTab] = useState<AdminTab>("stops");
+  const [site, setSite] = useState(content.site);
+  const [stops, setStops] = useState<Stop[]>(content.stops);
+  const [news, setNews] = useState<NewsPost[]>(content.news);
+  const [selectedStopId, setSelectedStopId] = useState<number>(content.stops[0]?.id ?? 1);
+  const [selectedNewsId, setSelectedNewsId] = useState<number>(content.news[0]?.id ?? 0);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState("");
+  const [creating, setCreating] = useState(false);
+
+  const selectedStop = stops.find((stop) => stop.id === selectedStopId);
+
+  const updateStop = useCallback((patch: Partial<Stop>) => {
+    setStops((prev) => prev.map((stop) => (stop.id === selectedStopId ? { ...stop, ...patch } : stop)));
+  }, [selectedStopId]);
+
+  const saveStop = async () => {
+    if (!selectedStop) return;
+    setSaving(true);
+    setSaveMsg("");
+    const res = await fetch(`/api/stops/${selectedStop.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(selectedStop),
+    });
+    setSaveMsg(res.ok ? "Da luu diem dung" : "Luu that bai");
+    setSaving(false);
+  };
+
+  const deleteStop = async () => {
+    if (!selectedStop || !confirm(`Xoa diem "${selectedStop.title.vi}"?`)) return;
+    const res = await fetch(`/api/stops/${selectedStop.id}`, { method: "DELETE" });
+    if (res.ok) {
+      const remaining = stops.filter((stop) => stop.id !== selectedStop.id);
+      setStops(remaining);
+      setSelectedStopId(remaining[0]?.id ?? 0);
     }
   };
 
@@ -364,9 +721,10 @@ export function AdminDashboard({ content }: { content: SiteContent }) {
     setCreating(true);
     const res = await fetch("/api/stops", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
     if (res.ok) {
-      const newStop = await res.json() as Stop;
+      const newStop = (await res.json()) as Stop;
       setStops((prev) => [...prev, newStop]);
-      setSelectedId(newStop.id);
+      setSelectedStopId(newStop.id);
+      setTab("stops");
     }
     setCreating(false);
   };
@@ -377,95 +735,104 @@ export function AdminDashboard({ content }: { content: SiteContent }) {
     router.refresh();
   };
 
+  const tabs: { id: AdminTab; label: string; icon: typeof LayoutDashboard }[] = [
+    { id: "stops", label: "Diem dung", icon: LayoutDashboard },
+    { id: "news", label: "Tin tuc", icon: Newspaper },
+    { id: "qr", label: "QR code", icon: QrCode },
+    { id: "stats", label: "Thong ke", icon: BarChart3 },
+    { id: "site", label: "Cau hinh", icon: Settings },
+  ];
+
   return (
     <div className="min-h-screen">
-      {/* Admin header */}
       <div className="sticky top-16 z-30 border-b border-[var(--line)] bg-[var(--shell)]/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-          <div>
-            <p className="text-xs font-black uppercase tracking-widest text-[var(--ocean)]">Admin CMS</p>
-            <h2 className="text-lg font-black text-[var(--ink)]">Quản lý nội dung Địa đạo Kỳ Anh</h2>
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-widest text-[var(--ocean)]">Admin CMS</p>
+              <h2 className="text-lg font-black text-[var(--ink)]">Quan ly he thong Dia dao Ky Anh</h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={createStop} disabled={creating} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[var(--bamboo)] px-4 text-sm font-bold text-white disabled:opacity-50">
+                <FilePlus className="size-4" />
+                {creating ? "Dang tao..." : "Them diem moi"}
+              </button>
+              <button type="button" onClick={logout} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[var(--line)] px-4 text-sm font-bold text-[var(--muted)]">
+                <LogOut className="size-4" />
+                Dang xuat
+              </button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={createStop}
-              disabled={creating}
-              className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[var(--bamboo)] px-4 text-sm font-bold text-white disabled:opacity-50"
-            >
-              <FilePlus className="size-4" />
-              {creating ? "Đang tạo..." : "Thêm điểm mới"}
-            </button>
-            <button
-              type="button"
-              onClick={logout}
-              className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[var(--line)] px-4 text-sm font-bold text-[var(--muted)]"
-            >
-              <LogOut className="size-4" />
-              Đăng xuất
-            </button>
+          <div className="flex gap-2 overflow-x-auto">
+            {tabs.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setTab(item.id)}
+                  className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-black ${tab === item.id ? "bg-[var(--ocean)] text-white" : "border border-[var(--line)] bg-white text-[var(--muted)]"}`}
+                >
+                  <Icon className="size-4" />
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid lg:grid-cols-[280px_1fr] lg:px-8">
-        {/* Stop list sidebar */}
-        <aside className="mb-6 lg:mb-0">
-          <div className="rounded-2xl border border-[var(--line)] bg-white/88 p-2 shadow-lg">
-            <p className="px-3 pb-2 pt-1 text-xs font-black uppercase tracking-widest text-[var(--muted)]">Danh sách điểm dừng</p>
-            {[...stops].sort((a, b) => a.id - b.id).map((stop) => (
-              <button
-                key={stop.id}
-                type="button"
-                onClick={() => setSelectedId(stop.id)}
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${selectedId === stop.id ? "bg-[var(--ocean)] text-white" : "hover:bg-[var(--sand-soft)]"}`}
-              >
-                <span className={`grid size-8 shrink-0 place-items-center rounded-full text-xs font-black ${selectedId === stop.id ? "bg-white/20" : "bg-[var(--sand-soft)] text-[var(--ocean)]"}`}>
-                  {stop.id}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-bold">{stop.title.vi}</span>
-                  <span className={`block truncate text-xs ${selectedId === stop.id ? "text-white/70" : "text-[var(--muted)]"}`}>{stop.duration}</span>
-                </span>
-                {selectedId === stop.id ? <ChevronRight className="size-4 shrink-0" /> : null}
-              </button>
-            ))}
-          </div>
-        </aside>
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        {tab === "stops" ? (
+          <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+            <aside className="rounded-2xl border border-[var(--line)] bg-white/88 p-2 shadow-lg">
+              <p className="px-3 pb-2 pt-1 text-xs font-black uppercase tracking-widest text-[var(--muted)]">Danh sach diem dung</p>
+              {[...stops].sort((a, b) => a.id - b.id).map((stop) => (
+                <button
+                  key={stop.id}
+                  type="button"
+                  onClick={() => setSelectedStopId(stop.id)}
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${selectedStopId === stop.id ? "bg-[var(--ocean)] text-white" : "hover:bg-[var(--sand-soft)]"}`}
+                >
+                  <span className={`grid size-8 shrink-0 place-items-center rounded-full text-xs font-black ${selectedStopId === stop.id ? "bg-white/20" : "bg-[var(--sand-soft)] text-[var(--ocean)]"}`}>
+                    {stop.id}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-bold">{stop.title.vi}</span>
+                    <span className={`block truncate text-xs ${selectedStopId === stop.id ? "text-white/70" : "text-[var(--muted)]"}`}>{stop.duration}</span>
+                  </span>
+                  {selectedStopId === stop.id ? <ChevronRight className="size-4 shrink-0" /> : null}
+                </button>
+              ))}
+            </aside>
 
-        {/* Editor */}
-        <main>
-          {saveMsg && (
-            <div className={`mb-4 rounded-2xl px-4 py-3 text-sm font-bold ${saveMsg.startsWith("✅") ? "bg-green-50 text-green-800" : "bg-red-50 text-red-700"}`}>
-              {saveMsg}
-            </div>
-          )}
-          {selected ? (
-            <>
-              <div className="mb-4 flex items-center gap-3">
-                <span className="grid size-10 place-items-center rounded-2xl bg-[var(--ocean)] text-lg font-black text-white">
-                  {selected.id}
-                </span>
-                <div>
-                  <h2 className="text-xl font-black text-[var(--ink)]">{selected.title.vi}</h2>
-                  <p className="text-sm text-[var(--muted)]">{selected.title.en}</p>
+            <main>
+              {saveMsg ? <div className="mb-4 rounded-2xl bg-green-50 px-4 py-3 text-sm font-bold text-green-800">{saveMsg}</div> : null}
+              {selectedStop ? (
+                <>
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="grid size-10 place-items-center rounded-2xl bg-[var(--ocean)] text-lg font-black text-white">{selectedStop.id}</span>
+                    <div>
+                      <h2 className="text-xl font-black text-[var(--ink)]">{selectedStop.title.vi}</h2>
+                      <p className="text-sm text-[var(--muted)]">{selectedStop.title.en}</p>
+                    </div>
+                    <Pencil className="ml-auto size-5 text-[var(--muted)]" />
+                  </div>
+                  <StopEditor stop={selectedStop} onChange={updateStop} onSave={saveStop} onDelete={deleteStop} saving={saving} />
+                </>
+              ) : (
+                <div className="rounded-2xl border-2 border-dashed border-[var(--line)] p-12 text-center text-[var(--muted)]">
+                  Chua co diem dung nao.
                 </div>
-                <Pencil className="ml-auto size-5 text-[var(--muted)]" />
-              </div>
-              <StopEditor
-                stop={selected}
-                onChange={updateStop}
-                onSave={save}
-                onDelete={deleteStop}
-                saving={saving}
-              />
-            </>
-          ) : (
-            <div className="rounded-2xl border-2 border-dashed border-[var(--line)] p-12 text-center text-[var(--muted)]">
-              Chưa có điểm dừng nào. Bấm &quot;Thêm điểm mới&quot; để bắt đầu.
-            </div>
-          )}
-        </main>
+              )}
+            </main>
+          </div>
+        ) : null}
+
+        {tab === "news" ? <NewsEditor posts={news} selectedId={selectedNewsId} setSelectedId={setSelectedNewsId} setPosts={setNews} /> : null}
+        {tab === "qr" ? <QRManager stops={stops} /> : null}
+        {tab === "stats" ? <StatsPanel stops={stops} /> : null}
+        {tab === "site" ? <SiteSettings site={site} setSite={setSite} /> : null}
       </div>
     </div>
   );

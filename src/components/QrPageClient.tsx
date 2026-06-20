@@ -16,8 +16,8 @@ export function QrPageClient({ stops, baseUrl }: { stops: Stop[]; baseUrl: strin
         </h1>
         <p className="mt-4 text-lg leading-8 text-[var(--muted)]">
           {lang === "vi"
-            ? "Dùng trang này để in thử biển QR tại di tích. Mỗi QR dẫn đến slug cố định /stops/1 đến /stops/6."
-            : "Use this page to prepare printable QR signage. Each QR links to a fixed slug from /stops/1 to /stops/6."}
+            ? `Dùng trang này để in thử biển QR tại di tích. Mỗi QR dẫn đến trang riêng của ${stops.length} điểm dừng hiện có.`
+            : `Use this page to prepare printable QR signage. Each QR links to one of the ${stops.length} current stop pages.`}
         </p>
       </div>
       <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">

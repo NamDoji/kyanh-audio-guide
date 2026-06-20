@@ -30,6 +30,17 @@ export type Stop = {
   };
 };
 
+export type NewsPost = {
+  id: number;
+  slug: string;
+  title: LocalizedText;
+  excerpt: LocalizedText;
+  body: LocalizedText;
+  image: string;
+  publishedAt: string;
+  status: "draft" | "published";
+};
+
 export type SiteContent = {
   site: {
     name: LocalizedText;
@@ -37,6 +48,7 @@ export type SiteContent = {
     description: LocalizedText;
   };
   stops: Stop[];
+  news: NewsPost[];
 };
 
 export type FeedbackPayload = {
@@ -45,4 +57,17 @@ export type FeedbackPayload = {
   nationality?: string;
   rating: number;
   message: string;
+};
+
+export type VisitPayload = {
+  path: string;
+  title?: string;
+  referrer?: string;
+  lang?: Lang;
+};
+
+export type VisitRecord = VisitPayload & {
+  createdAt: string;
+  userAgent?: string;
+  ip?: string;
 };

@@ -13,7 +13,7 @@ export function SiteMap({ stops, lang, showOpenMapLink = true }: { stops: Stop[]
             {lang === "vi" ? "Sơ đồ tuyến" : "Route map"}
           </p>
           <h2 className="mt-2 text-2xl font-black text-[var(--ink)]">
-            {lang === "vi" ? "6 điểm dừng theo hành trình" : "6 stops along the route"}
+            {lang === "vi" ? `${stops.length} điểm dừng theo hành trình` : `${stops.length} stops along the route`}
           </h2>
         </div>
         {showOpenMapLink ? (

@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
-import { getContent } from "@/lib/content";
+import { getContent, saveContent } from "@/lib/content";
 import { isAdminAuthenticated } from "@/lib/auth";
-import { promises as fs } from "fs";
-import path from "path";
 import type { Stop } from "@/types/content";
-
-const stopsPath = path.join(process.cwd(), "data", "stops.json");
 
 export async function GET() {
   const content = await getContent();
@@ -42,6 +38,6 @@ export async function POST(request: Request) {
   };
 
   content.stops.push(blank);
-  await fs.writeFile(stopsPath, `${JSON.stringify(content, null, 2)}\n`, "utf8");
+  await saveContent(content);
   return NextResponse.json(blank, { status: 201 });
 }

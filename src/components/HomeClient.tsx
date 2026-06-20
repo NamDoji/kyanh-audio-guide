@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Headphones, QrCode, ShieldCheck } from "lucide-react";
+import { ArrowRight, CalendarDays, Headphones, QrCode, ShieldCheck } from "lucide-react";
 import type { SiteContent } from "@/types/content";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { SafetyNotes } from "./SafetyNotes";
@@ -13,6 +13,7 @@ import { usePreferences } from "./PreferenceProvider";
 export function HomeClient({ content }: { content: SiteContent }) {
   const { lang } = usePreferences();
   const stops = content.stops;
+  const latestNews = content.news.filter((post) => post.status === "published").slice(0, 3);
 
   return (
     <>
@@ -114,6 +115,37 @@ export function HomeClient({ content }: { content: SiteContent }) {
         </div>
       </section>
 
+      {latestNews.length > 0 ? (
+        <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-black uppercase tracking-[0.25em] text-[var(--ocean)]">
+                {lang === "vi" ? "Tin tức" : "News"}
+              </p>
+              <h2 className="heritage-title mt-2 text-3xl font-black text-[var(--ink)]">
+                {lang === "vi" ? "Cập nhật mới nhất" : "Latest updates"}
+              </h2>
+            </div>
+            <Link href="/news" className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[var(--line)] bg-white px-5 text-sm font-black">
+              {lang === "vi" ? "Xem tất cả" : "View all"}
+              <ArrowRight className="size-4" />
+            </Link>
+          </div>
+          <div className="grid gap-5 md:grid-cols-3">
+            {latestNews.map((post) => (
+              <Link key={post.id} href={`/news/${post.id}`} className="rounded-[1.75rem] border border-[var(--line)] bg-white/90 p-5 shadow-lg transition hover:-translate-y-1 hover:shadow-xl">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+                  <CalendarDays className="size-4" />
+                  {new Date(post.publishedAt).toLocaleDateString(lang === "vi" ? "vi-VN" : "en-US")}
+                </div>
+                <h3 className="mt-3 text-lg font-black leading-tight text-[var(--ink)]">{post.title[lang]}</h3>
+                <p className="mt-3 line-clamp-3 text-sm leading-7 text-[var(--muted)]">{post.excerpt[lang]}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
         <div className="rounded-[2rem] bg-[var(--ocean)] p-6 text-white shadow-xl sm:p-8 lg:flex lg:items-center lg:justify-between">
           <div>
@@ -123,8 +155,8 @@ export function HomeClient({ content }: { content: SiteContent }) {
             </h2>
             <p className="mt-2 max-w-2xl text-white/85">
               {lang === "vi"
-                ? "Mỗi biển QR dẫn đến trang riêng /stops/1 đến /stops/6, giúp khách nghe đúng audio tại vị trí đang đứng."
-                : "Each QR sign links to a fixed page from /stops/1 to /stops/6 so visitors hear the correct audio where they stand."}
+                ? "Mỗi biển QR dẫn đến trang riêng của điểm dừng, giúp khách nghe đúng audio tại vị trí đang đứng."
+                : "Each QR sign links to its stop page so visitors hear the correct audio where they stand."}
             </p>
           </div>
           <Link href="/stops/1" className="mt-5 inline-flex min-h-14 items-center justify-center rounded-full bg-white px-6 font-black text-[var(--ocean)] lg:mt-0">
