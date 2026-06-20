@@ -53,6 +53,7 @@ export function Header() {
 
         <div className="ml-auto flex shrink-0 items-center gap-2 md:hidden" aria-label={lang === "vi" ? "Tùy chọn hiển thị" : "Display options"}>
           <LanguageSwitcher compact />
+          <ThemeToggle compact />
           <FontSizeControl compact />
         </div>
       </div>
