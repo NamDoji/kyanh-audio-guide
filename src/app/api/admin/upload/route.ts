@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 import { isAdminAuthenticated } from "@/lib/auth";
+import { getStop, updateStop } from "@/lib/content";
+import type { Lang, Stop } from "@/types/content";
 
 const AUDIO_DIR = path.join(process.cwd(), "public", "audio");
 const ALLOWED_TYPES = new Set(["audio/mp4", "audio/mpeg", "audio/ogg", "audio/wav", "audio/x-m4a", "audio/m4a"]);
@@ -22,6 +24,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "No file provided" }, { status: 400 });
   }
 
+  const stopIdRaw = formData.get("stopId");
+  const langRaw = formData.get("lang");
+  const stopId = typeof stopIdRaw === "string" ? Number(stopIdRaw) : NaN;
+  const lang = langRaw === "vi" || langRaw === "en" ? langRaw : null;
+
+  if (!Number.isInteger(stopId) || stopId < 1 || !lang) {
+    return NextResponse.json({ message: "Missing valid stopId/lang" }, { status: 400 });
+  }
+
   // Validate type
   const contentType = file.type.toLowerCase();
   if (!ALLOWED_TYPES.has(contentType) && !file.name.match(/\.(mp3|m4a|ogg|wav)$/i)) {
@@ -33,8 +44,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "File quá lớn (max 50 MB)" }, { status: 400 });
   }
 
-  // Sanitize filename: only allow stop{n}_{lang}.{ext} pattern
-  const sanitized = file.name
+  const rawExt = file.name.split(".").pop()?.toLowerCase() ?? "m4a";
+  const ext = ["mp3", "m4a", "ogg", "wav"].includes(rawExt) ? rawExt : "m4a";
+
+  // Use a versioned filename so browsers do not keep playing a cached old file.
+  const baseName = `stop${stopId}_${lang}_${Date.now()}.${ext}`;
+  const sanitized = baseName
     .replace(/[^a-zA-Z0-9_\-\.]/g, "")
     .toLowerCase();
 
@@ -46,5 +61,23 @@ export async function POST(request: Request) {
   await fs.writeFile(destPath, buffer);
 
   const publicPath = `/audio/${sanitized}`;
-  return NextResponse.json({ ok: true, path: publicPath, filename: sanitized, size: file.size });
+  const current = await getStop(stopId) as Stop | undefined;
+  if (!current) {
+    return NextResponse.json({ message: `Stop ${stopId} was not found` }, { status: 404 });
+  }
+
+  const updated = await updateStop(stopId, {
+    audio: {
+      ...current.audio,
+      [lang as Lang]: publicPath,
+    },
+  });
+
+  return NextResponse.json({
+    ok: true,
+    path: publicPath,
+    filename: sanitized,
+    size: file.size,
+    stop: updated,
+  });
 }

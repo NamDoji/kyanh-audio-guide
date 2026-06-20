@@ -23,7 +23,7 @@ export function MapPageClient({ stops }: { stops: Stop[] }) {
         </p>
       </div>
       <div className="mt-8">
-        <SiteMap stops={stops} lang={lang} />
+        <SiteMap stops={stops} lang={lang} showOpenMapLink={false} />
       </div>
       <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {stops.map((stop) => (

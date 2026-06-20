@@ -22,6 +22,13 @@ export function AudioPlayer({ stop, lang }: { stop: Stop; lang: Lang }) {
   const [loaded, setLoaded] = useState(false);
 
   const audioSrc = stop.audio[lang];
+  const audioType = audioSrc.endsWith(".mp3")
+    ? "audio/mpeg"
+    : audioSrc.endsWith(".ogg")
+      ? "audio/ogg"
+      : audioSrc.endsWith(".wav")
+        ? "audio/wav"
+        : "audio/mp4";
 
   // Reset player state whenever source or lang changes
   useEffect(() => {
@@ -54,7 +61,7 @@ export function AudioPlayer({ stop, lang }: { stop: Stop; lang: Lang }) {
         setPlaying(true);
         setError("");
       }
-    } catch (err) {
+    } catch {
       const msg = lang === "vi"
         ? "Không phát được audio. Nhấn lại hoặc xem transcript bên dưới."
         : "Could not play audio. Try again or read the transcript below.";
@@ -111,8 +118,7 @@ export function AudioPlayer({ stop, lang }: { stop: Stop; lang: Lang }) {
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
       >
-        <source src={audioSrc} type="audio/mp4" />
-        <source src={audioSrc.replace(".m4a", ".mp3")} type="audio/mpeg" />
+        <source src={audioSrc} type={audioType} />
       </audio>
 
       {/* Main player row */}

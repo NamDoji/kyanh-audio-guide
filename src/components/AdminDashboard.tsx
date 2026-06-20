@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback } from "react";
 import {
-  ChevronDown, ChevronRight, FilePlus, LogOut, Mic2,
+  ChevronRight, FilePlus, LogOut, Mic2,
   Pencil, PlayCircle, Save, Trash2, Upload, ImageIcon,
 } from "lucide-react";
 import type { SiteContent, Stop } from "@/types/content";
@@ -53,7 +53,7 @@ function BilingualField({
 // ─── AudioUploader ────────────────────────────────────────────────────────────
 function AudioUploader({ stopId, lang, current, onUploaded }: {
   stopId: number; lang: Lang; current: string;
-  onUploaded: (path: string) => void;
+  onUploaded: (stop: Stop) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -62,18 +62,17 @@ function AudioUploader({ stopId, lang, current, onUploaded }: {
   const upload = async (file: File) => {
     setUploading(true);
     setMsg("");
-    // Rename to standard pattern
-    const ext = file.name.split(".").pop() ?? "m4a";
-    const standardName = `stop${stopId}_${lang}.${ext}`;
     const form = new FormData();
-    form.append("file", file, standardName);
+    form.append("file", file);
+    form.append("stopId", String(stopId));
+    form.append("lang", lang);
 
     const res = await fetch("/api/admin/upload", { method: "POST", body: form });
-    const data = await res.json() as { ok?: boolean; path?: string; message?: string };
+    const data = await res.json() as { ok?: boolean; path?: string; stop?: Stop; message?: string };
 
-    if (res.ok && data.path) {
-      onUploaded(data.path);
-      setMsg(`✅ Đã upload: ${data.path}`);
+    if (res.ok && data.path && data.stop) {
+      onUploaded(data.stop);
+      setMsg(`✅ Đã upload và lưu: ${data.path}`);
     } else {
       setMsg(`❌ ${data.message ?? "Upload thất bại"}`);
     }
@@ -125,7 +124,7 @@ function AudioUploader({ stopId, lang, current, onUploaded }: {
 }
 
 // ─── ImageUploader ─────────────────────────────────────────────────────────────
-function ImageUploader({ current, onUploaded }: { current: string; onUploaded: (path: string) => void }) {
+function ImageUploader({ stopId, current, onUploaded }: { stopId: number; current: string; onUploaded: (stop: Stop) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState("");
@@ -134,9 +133,10 @@ function ImageUploader({ current, onUploaded }: { current: string; onUploaded: (
     setUploading(true);
     const form = new FormData();
     form.append("file", file);
+    form.append("stopId", String(stopId));
     const res = await fetch("/api/admin/upload-image", { method: "POST", body: form });
-    const data = await res.json() as { ok?: boolean; path?: string; message?: string };
-    if (res.ok && data.path) { onUploaded(data.path); setMsg(`✅ ${data.path}`); }
+    const data = await res.json() as { ok?: boolean; path?: string; stop?: Stop; message?: string };
+    if (res.ok && data.path && data.stop) { onUploaded(data.stop); setMsg(`✅ Đã upload và lưu: ${data.path}`); }
     else setMsg(`❌ ${data.message ?? "Upload thất bại"}`);
     setUploading(false);
   };
@@ -197,6 +197,11 @@ function StopEditor({ stop, onChange, onSave, onDelete, saving }: {
     onChange({ highlights: { ...stop.highlights, [lang]: arr } });
   };
 
+  const setMapPosition = (axis: "x" | "y", value: string) => {
+    const numeric = Math.max(0, Math.min(100, Number(value) || 0));
+    onChange({ mapPosition: { ...stop.mapPosition, [axis]: numeric } });
+  };
+
   return (
     <div className="space-y-6">
       {/* Basic */}
@@ -255,8 +260,8 @@ function StopEditor({ stop, onChange, onSave, onDelete, saving }: {
           File audio
         </h3>
         <div className="grid gap-3 sm:grid-cols-2">
-          <AudioUploader stopId={stop.id} lang="vi" current={stop.audio.vi} onUploaded={(p) => onChange({ audio: { ...stop.audio, vi: p } })} />
-          <AudioUploader stopId={stop.id} lang="en" current={stop.audio.en} onUploaded={(p) => onChange({ audio: { ...stop.audio, en: p } })} />
+          <AudioUploader stopId={stop.id} lang="vi" current={stop.audio.vi} onUploaded={(updated) => onChange(updated)} />
+          <AudioUploader stopId={stop.id} lang="en" current={stop.audio.en} onUploaded={(updated) => onChange(updated)} />
         </div>
       </section>
 
@@ -266,7 +271,18 @@ function StopEditor({ stop, onChange, onSave, onDelete, saving }: {
           <ImageIcon className="mr-1 inline size-4" />
           Ảnh minh họa
         </h3>
-        <ImageUploader current={stop.image} onUploaded={(p) => onChange({ image: p })} />
+        <ImageUploader stopId={stop.id} current={stop.image} onUploaded={(updated) => onChange(updated)} />
+      </section>
+
+      {/* Map position */}
+      <section className="rounded-2xl bg-white/88 p-5 shadow">
+        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">
+          Vị trí trên bản đồ
+        </h3>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Tọa độ X (%)" value={String(stop.mapPosition.x)} onChange={(v) => setMapPosition("x", v)} />
+          <Field label="Tọa độ Y (%)" value={String(stop.mapPosition.y)} onChange={(v) => setMapPosition("y", v)} />
+        </div>
       </section>
 
       {/* Actions */}
@@ -397,7 +413,7 @@ export function AdminDashboard({ content }: { content: SiteContent }) {
         <aside className="mb-6 lg:mb-0">
           <div className="rounded-2xl border border-[var(--line)] bg-white/88 p-2 shadow-lg">
             <p className="px-3 pb-2 pt-1 text-xs font-black uppercase tracking-widest text-[var(--muted)]">Danh sách điểm dừng</p>
-            {stops.sort((a, b) => a.id - b.id).map((stop) => (
+            {[...stops].sort((a, b) => a.id - b.id).map((stop) => (
               <button
                 key={stop.id}
                 type="button"

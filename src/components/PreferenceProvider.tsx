@@ -31,18 +31,20 @@ export function PreferenceProvider({ children }: { children: ReactNode }) {
 
   // After mount: read localStorage and apply user preferences
   useEffect(() => {
-    const savedLang = localStorage.getItem("kyanh_lang");
-    if (savedLang === "vi" || savedLang === "en") setLangState(savedLang);
+    window.setTimeout(() => {
+      const savedLang = localStorage.getItem("kyanh_lang");
+      if (savedLang === "vi" || savedLang === "en") setLangState(savedLang);
 
-    const savedTunnel = localStorage.getItem("kyanh_tunnel_mode");
-    if (savedTunnel === "true") setTunnelModeState(true);
+      const savedTunnel = localStorage.getItem("kyanh_tunnel_mode");
+      if (savedTunnel === "true") setTunnelModeState(true);
 
-    const savedScale = parseFloat(localStorage.getItem("kyanh_font_scale") || "1");
-    if (!isNaN(savedScale) && savedScale >= 0.92 && savedScale <= 1.25) {
-      setFontScale(savedScale);
-    }
+      const savedScale = parseFloat(localStorage.getItem("kyanh_font_scale") || "1");
+      if (!isNaN(savedScale) && savedScale >= 0.92 && savedScale <= 1.25) {
+        setFontScale(savedScale);
+      }
 
-    setMounted(true);
+      setMounted(true);
+    }, 0);
   }, []);
 
   // Apply lang/theme/font to <html>
