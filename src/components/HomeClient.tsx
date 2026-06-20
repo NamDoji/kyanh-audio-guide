@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Headphones, QrCode, ShieldCheck } from "lucide-react";
 import type { SiteContent } from "@/types/content";
-import { LanguageSwitcher } from "./LanguageSwitcher";
 import { SafetyNotes } from "./SafetyNotes";
 import { SiteMap } from "./SiteMap";
 import { StopCard } from "./StopCard";
@@ -40,15 +39,6 @@ export function HomeClient({ content }: { content: SiteContent }) {
                 {lang === "vi" ? "Bắt đầu tham quan" : "Start the tour"}
                 <ArrowRight aria-hidden className="size-5" />
               </Link>
-              <Link
-                href="/language"
-                className="inline-flex min-h-14 items-center justify-center rounded-full border border-white/45 bg-white/14 px-6 text-base font-black text-white backdrop-blur transition hover:bg-white/22"
-              >
-                {lang === "vi" ? "Chọn ngôn ngữ" : "Choose language"}
-              </Link>
-            </div>
-            <div className="mt-6">
-              <LanguageSwitcher />
             </div>
           </div>
         </div>
