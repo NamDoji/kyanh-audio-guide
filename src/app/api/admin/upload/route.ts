@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
+import { put } from "@vercel/blob";
 import { promises as fs } from "fs";
 import path from "path";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { getStop, updateStop } from "@/lib/content";
 import type { Lang, Stop } from "@/types/content";
 
+const IS_VERCEL = !!process.env.VERCEL || !!process.env.BLOB_READ_WRITE_TOKEN;
 const AUDIO_DIR = path.join(process.cwd(), "public", "audio");
 const ALLOWED_TYPES = new Set(["audio/mp4", "audio/mpeg", "audio/ogg", "audio/wav", "audio/x-m4a", "audio/m4a"]);
 const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
@@ -53,14 +55,25 @@ export async function POST(request: Request) {
     .replace(/[^a-zA-Z0-9_\-\.]/g, "")
     .toLowerCase();
 
-  // Ensure audio dir exists
-  await fs.mkdir(AUDIO_DIR, { recursive: true });
-
-  const destPath = path.join(AUDIO_DIR, sanitized);
   const buffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(destPath, buffer);
+  let publicPath: string;
 
-  const publicPath = `/audio/${sanitized}`;
+  if (IS_VERCEL) {
+    // Upload to Vercel Blob
+    const blob = await put(`audio/${sanitized}`, buffer, {
+      access: "public",
+      contentType: contentType || `audio/${ext}`,
+      allowOverwrite: true,
+    });
+    publicPath = blob.url;
+  } else {
+    // Local: write to public/audio/
+    await fs.mkdir(AUDIO_DIR, { recursive: true });
+    const destPath = path.join(AUDIO_DIR, sanitized);
+    await fs.writeFile(destPath, buffer);
+    publicPath = `/audio/${sanitized}`;
+  }
+
   const current = await getStop(stopId) as Stop | undefined;
   if (!current) {
     return NextResponse.json({ message: `Stop ${stopId} was not found` }, { status: 404 });

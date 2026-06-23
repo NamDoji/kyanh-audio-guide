@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
+import { put } from "@vercel/blob";
 import { promises as fs } from "fs";
 import path from "path";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { updateStop } from "@/lib/content";
 
+const IS_VERCEL = !!process.env.VERCEL || !!process.env.BLOB_READ_WRITE_TOKEN;
 const IMG_DIR = path.join(process.cwd(), "public", "images");
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/svg+xml"]);
 const MAX_SIZE = 20 * 1024 * 1024; // 20 MB
@@ -38,13 +40,24 @@ export async function POST(request: Request) {
   const sanitized = `stop${stopId}_image_${Date.now()}.${ext}`
     .replace(/[^a-zA-Z0-9_\-\.]/g, "")
     .toLowerCase();
-  await fs.mkdir(IMG_DIR, { recursive: true });
-  const destPath = path.join(IMG_DIR, sanitized);
+
   const buffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(destPath, buffer);
+  let publicPath: string;
 
-  const publicPath = `/images/${sanitized}`;
+  if (IS_VERCEL) {
+    const blob = await put(`images/${sanitized}`, buffer, {
+      access: "public",
+      contentType: file.type,
+      allowOverwrite: true,
+    });
+    publicPath = blob.url;
+  } else {
+    await fs.mkdir(IMG_DIR, { recursive: true });
+    const destPath = path.join(IMG_DIR, sanitized);
+    await fs.writeFile(destPath, buffer);
+    publicPath = `/images/${sanitized}`;
+  }
+
   const updated = await updateStop(stopId, { image: publicPath });
-
   return NextResponse.json({ ok: true, path: publicPath, filename: sanitized, stop: updated });
 }

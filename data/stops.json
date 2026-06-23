@@ -56,11 +56,14 @@
       "duration": "1:45",
       "image": "/images/tunnel-entrance.svg",
       "audio": {
-        "vi": "/audio/stop1_vi.m4a",
-        "en": "/audio/stop1_en.m4a"
+        "vi": "/audio/stop1_vi_1781970936989.mp3",
+        "en": "/audio/stop1_en_1781971015808.mp3"
       },
       "qrPath": "/stops/1",
-      "mapPosition": { "x": 12, "y": 78 }
+      "mapPosition": {
+        "x": 12,
+        "y": 78
+      }
     },
     {
       "id": 2,
@@ -108,7 +111,10 @@
         "en": "/audio/stop2_en.m4a"
       },
       "qrPath": "/stops/2",
-      "mapPosition": { "x": 28, "y": 64 }
+      "mapPosition": {
+        "x": 28,
+        "y": 64
+      }
     },
     {
       "id": 3,
@@ -156,7 +162,10 @@
         "en": "/audio/stop3_en.m4a"
       },
       "qrPath": "/stops/3",
-      "mapPosition": { "x": 44, "y": 50 }
+      "mapPosition": {
+        "x": 44,
+        "y": 50
+      }
     },
     {
       "id": 4,
@@ -204,7 +213,10 @@
         "en": "/audio/stop4_en.m4a"
       },
       "qrPath": "/stops/4",
-      "mapPosition": { "x": 60, "y": 38 }
+      "mapPosition": {
+        "x": 60,
+        "y": 38
+      }
     },
     {
       "id": 5,
@@ -252,7 +264,10 @@
         "en": "/audio/stop5_en.m4a"
       },
       "qrPath": "/stops/5",
-      "mapPosition": { "x": 75, "y": 28 }
+      "mapPosition": {
+        "x": 75,
+        "y": 28
+      }
     },
     {
       "id": 6,
@@ -300,7 +315,69 @@
         "en": "/audio/stop6_en.m4a"
       },
       "qrPath": "/stops/6",
-      "mapPosition": { "x": 88, "y": 18 }
+      "mapPosition": {
+        "x": 88,
+        "y": 18
+      }
+    }
+  ],
+  "news": [
+    {
+      "id": 1,
+      "slug": "welcome-to-ky-anh-audio-guide",
+      "title": {
+        "vi": "Ra mắt audio guide Địa đạo Kỳ Anh",
+        "en": "Ky Anh audio guide is now available"
+      },
+      "excerpt": {
+        "vi": "Khách tham quan có thể quét QR tại từng điểm để nghe thuyết minh song ngữ và xem bản đồ tuyến.",
+        "en": "Visitors can scan QR codes at each stop to listen to bilingual narration and view the route map."
+      },
+      "body": {
+        "vi": "Hệ thống audio guide hỗ trợ khách tự tham quan Địa đạo Kỳ Anh bằng điện thoại cá nhân. Mỗi điểm dừng có audio, tóm tắt, bản đồ và nội dung song ngữ Việt - Anh.",
+        "en": "The audio guide helps visitors explore the Ky Anh tunnels on their own phones. Each stop includes audio, summaries, map access and bilingual Vietnamese - English content."
+      },
+      "image": "/images/heritage.svg",
+      "publishedAt": "2026-06-20T16:00:02.267Z",
+      "status": "published"
+    },
+    {
+      "id": 2,
+      "slug": "news-2",
+      "title": {
+        "vi": "Tin tức 2",
+        "en": "News 2"
+      },
+      "excerpt": {
+        "vi": "",
+        "en": ""
+      },
+      "body": {
+        "vi": "",
+        "en": ""
+      },
+      "image": "/images/heritage.svg",
+      "publishedAt": "2026-06-20T16:24:08.522Z",
+      "status": "draft"
+    },
+    {
+      "id": 3,
+      "slug": "news-3",
+      "title": {
+        "vi": "Tin tức 3",
+        "en": "News 3"
+      },
+      "excerpt": {
+        "vi": "",
+        "en": ""
+      },
+      "body": {
+        "vi": "",
+        "en": ""
+      },
+      "image": "/images/heritage.svg",
+      "publishedAt": "2026-06-20T16:24:08.890Z",
+      "status": "draft"
     }
   ]
 }

@@ -1,11 +1,40 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { put, head, del } from "@vercel/blob";
 import type { FeedbackPayload, FeedbackRecord, NewsPost, SiteContent, Stop, VisitPayload, VisitRecord } from "@/types/content";
+
+// ---------------------------------------------------------------------------
+// Storage helpers: Vercel Blob (production) vs local filesystem (dev)
+// ---------------------------------------------------------------------------
+const IS_VERCEL = !!process.env.VERCEL || !!process.env.BLOB_READ_WRITE_TOKEN;
+const BLOB_DATA_KEY = "data/stops.json";
+const BLOB_FEEDBACK_KEY = "data/feedback.jsonl";
+const BLOB_VISITS_KEY = "data/visits.jsonl";
 
 const dataDir = path.join(process.cwd(), "data");
 const stopsPath = path.join(dataDir, "stops.json");
 const feedbackPath = path.join(dataDir, "feedback.jsonl");
 const visitsPath = path.join(dataDir, "visits.jsonl");
+
+// Read a text file from Blob (returns null if not found)
+async function blobRead(key: string): Promise<string | null> {
+  try {
+    const { url } = await head(key).catch(() => ({ url: null as unknown as string }));
+    if (!url) return null;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) return null;
+    return res.text();
+  } catch {
+    return null;
+  }
+}
+
+// Write a text file to Blob
+async function blobWrite(key: string, content: string): Promise<void> {
+  await put(key, content, { access: "public", allowOverwrite: true });
+}
+
+// ---------------------------------------------------------------------------
 
 const defaultNews: NewsPost[] = [
   {
@@ -37,13 +66,29 @@ function withDefaults(content: SiteContent): SiteContent {
 }
 
 export async function getContent(): Promise<SiteContent> {
+  if (IS_VERCEL) {
+    const raw = await blobRead(BLOB_DATA_KEY);
+    if (raw) return withDefaults(JSON.parse(raw) as SiteContent);
+    // Fallback: read from bundled data dir (read-only, initial seed)
+    try {
+      const seed = await fs.readFile(stopsPath, "utf8");
+      return withDefaults(JSON.parse(seed) as SiteContent);
+    } catch {
+      return withDefaults({ site: { name: "Kỳ Anh Audio Guide", tagline: "", description: "" }, stops: [], news: [] } as unknown as SiteContent);
+    }
+  }
   const raw = await fs.readFile(stopsPath, "utf8");
   return withDefaults(JSON.parse(raw) as SiteContent);
 }
 
 export async function saveContent(content: SiteContent): Promise<void> {
+  const data = `${JSON.stringify(withDefaults(content), null, 2)}\n`;
+  if (IS_VERCEL) {
+    await blobWrite(BLOB_DATA_KEY, data);
+    return;
+  }
   await fs.mkdir(dataDir, { recursive: true });
-  await fs.writeFile(stopsPath, `${JSON.stringify(withDefaults(content), null, 2)}\n`, "utf8");
+  await fs.writeFile(stopsPath, data, "utf8");
 }
 
 export async function getStops(): Promise<Stop[]> {
@@ -118,31 +163,47 @@ export async function deleteNewsPost(id: number): Promise<void> {
   await saveContent(content);
 }
 
+// ---------------------------------------------------------------------------
+// Feedback
+// ---------------------------------------------------------------------------
 export async function appendFeedback(payload: FeedbackPayload): Promise<void> {
-  await fs.mkdir(dataDir, { recursive: true });
   const record = {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     ...payload,
     createdAt: new Date().toISOString(),
   };
-  await fs.appendFile(feedbackPath, `${JSON.stringify(record)}\n`, "utf8");
+  const line = `${JSON.stringify(record)}\n`;
+
+  if (IS_VERCEL) {
+    const existing = (await blobRead(BLOB_FEEDBACK_KEY)) ?? "";
+    await blobWrite(BLOB_FEEDBACK_KEY, existing + line);
+    return;
+  }
+  await fs.mkdir(dataDir, { recursive: true });
+  await fs.appendFile(feedbackPath, line, "utf8");
 }
 
-async function readJsonLines<T>(filePath: string): Promise<T[]> {
-  try {
-    const raw = await fs.readFile(filePath, "utf8");
-    return raw
-      .split("\n")
-      .filter(Boolean)
-      .map((line) => JSON.parse(line) as T);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw error;
+async function readJsonLines<T>(filePath: string, blobKey: string): Promise<T[]> {
+  let raw: string | null = null;
+  if (IS_VERCEL) {
+    raw = await blobRead(blobKey);
+  } else {
+    try {
+      raw = await fs.readFile(filePath, "utf8");
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+      throw error;
+    }
   }
+  if (!raw) return [];
+  return raw
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => JSON.parse(line) as T);
 }
 
 export async function getFeedbackRecords() {
-  const records = await readJsonLines<Partial<FeedbackRecord> & FeedbackPayload & { createdAt: string }>(feedbackPath);
+  const records = await readJsonLines<Partial<FeedbackRecord> & FeedbackPayload & { createdAt: string }>(feedbackPath, BLOB_FEEDBACK_KEY);
   return records.map((record, index) => ({
     ...record,
     id: record.id ?? `${record.createdAt}-${index}`,
@@ -154,26 +215,41 @@ export async function deleteFeedbackRecord(id: string): Promise<boolean> {
   const next = records.filter((record) => record.id !== id);
   if (next.length === records.length) return false;
 
+  const data = next.map((record) => `${JSON.stringify(record)}`).join("\n") + (next.length ? "\n" : "");
+  if (IS_VERCEL) {
+    await blobWrite(BLOB_FEEDBACK_KEY, data);
+    return true;
+  }
   await fs.mkdir(dataDir, { recursive: true });
-  await fs.writeFile(feedbackPath, next.map((record) => `${JSON.stringify(record)}`).join("\n") + (next.length ? "\n" : ""), "utf8");
+  await fs.writeFile(feedbackPath, data, "utf8");
   return true;
 }
 
+// ---------------------------------------------------------------------------
+// Visits
+// ---------------------------------------------------------------------------
 export async function appendVisit(payload: VisitPayload, request: Request): Promise<void> {
   if (!payload.path || payload.path.startsWith("/api") || payload.path.startsWith("/_next")) return;
 
-  await fs.mkdir(dataDir, { recursive: true });
   const record: VisitRecord = {
     ...payload,
     createdAt: new Date().toISOString(),
     userAgent: request.headers.get("user-agent") ?? undefined,
     ip: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim(),
   };
-  await fs.appendFile(visitsPath, `${JSON.stringify(record)}\n`, "utf8");
+  const line = `${JSON.stringify(record)}\n`;
+
+  if (IS_VERCEL) {
+    const existing = (await blobRead(BLOB_VISITS_KEY)) ?? "";
+    await blobWrite(BLOB_VISITS_KEY, existing + line);
+    return;
+  }
+  await fs.mkdir(dataDir, { recursive: true });
+  await fs.appendFile(visitsPath, line, "utf8");
 }
 
 export async function getVisitRecords(): Promise<VisitRecord[]> {
-  return readJsonLines<VisitRecord>(visitsPath);
+  return readJsonLines<VisitRecord>(visitsPath, BLOB_VISITS_KEY);
 }
 
 export function absoluteUrl(pathname: string): string {
