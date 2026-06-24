@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
+import { generateClientTokenFromReadWriteToken } from "@vercel/blob/client";
 import { promises as fs } from "fs";
 import path from "path";
 import { isAdminAuthenticated } from "@/lib/auth";
@@ -21,70 +21,36 @@ const ALLOWED_TYPES = [
 const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
 
 /**
- * POST /api/admin/upload
- *
- * Two modes:
- *  - multipart/form-data  → legacy server-side upload (local dev, small files)
- *  - application/json     → @vercel/blob client-side upload token flow (production)
- *
- * The client-side flow (using `upload()` from @vercel/blob/client) uploads the
- * audio file DIRECTLY from the browser to Vercel Blob CDN, bypassing the 4.5 MB
- * serverless body limit entirely.
+ * GET /api/admin/upload?pathname=audio/stop1_vi_xxx.mp3
+ * → Trả về client token để browser upload thẳng lên Vercel Blob CDN.
+ * File không đi qua serverless → không bị giới hạn 4.5 MB.
  */
-export async function POST(request: Request): Promise<Response> {
-  const contentType = request.headers.get("content-type") ?? "";
-
-  if (contentType.includes("multipart/form-data")) {
-    return handleFormUpload(request);
+export async function GET(request: Request): Promise<Response> {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  // Client-side blob upload token flow
-  const body = (await request.json()) as HandleUploadBody;
-
-  try {
-    const jsonResponse = await handleUpload({
-      body,
-      request,
-      onBeforeGenerateToken: async (_pathname, clientPayload) => {
-        if (!(await isAdminAuthenticated())) {
-          throw new Error("Unauthorized");
-        }
-        return {
-          allowedContentTypes: ALLOWED_TYPES,
-          maximumSizeInBytes: MAX_SIZE,
-          tokenPayload: clientPayload ?? "",
-        };
-      },
-      onUploadCompleted: async ({ blob, tokenPayload }) => {
-        // Best-effort save; client also calls /api/admin/audio as primary path
-        try {
-          const payload = JSON.parse(tokenPayload ?? "{}") as {
-            stopId?: number;
-            lang?: string;
-          };
-          const { stopId, lang } = payload;
-          if (stopId && lang) {
-            const current = await getStop(Number(stopId));
-            if (current) {
-              await updateStop(Number(stopId), {
-                audio: { ...current.audio, [lang as Lang]: blob.url },
-              });
-            }
-          }
-        } catch {
-          // non-fatal — client calls /api/admin/audio after upload
-        }
-      },
-    });
-
-    return NextResponse.json(jsonResponse);
-  } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 400 });
+  const { searchParams } = new URL(request.url);
+  const pathname = searchParams.get("pathname");
+  if (!pathname) {
+    return NextResponse.json({ message: "Missing pathname" }, { status: 400 });
   }
+
+  const token = await generateClientTokenFromReadWriteToken({
+    pathname,
+    allowedContentTypes: ALLOWED_TYPES,
+    maximumSizeInBytes: MAX_SIZE,
+    validUntil: Date.now() + 5 * 60 * 1000, // 5 phút
+  });
+
+  return NextResponse.json({ token });
 }
 
-/** Handles multipart/form-data uploads (local dev or small-file fallback) */
-async function handleFormUpload(request: Request): Promise<Response> {
+/**
+ * POST /api/admin/upload (multipart/form-data)
+ * Fallback cho local dev (không có Blob token) hoặc file nhỏ.
+ */
+export async function POST(request: Request): Promise<Response> {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }

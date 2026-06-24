@@ -115,51 +115,64 @@ function AudioUploader({
     setProgress(0);
     setMsg(null);
 
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "m4a";
+    const pathname = `audio/stop${stopId}_${lang}_${Date.now()}.${ext}`;
+
     try {
-      // Client-side upload: file goes directly browser → Vercel CDN (no 4.5 MB limit)
-      const { upload: blobUpload } = await import("@vercel/blob/client");
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "m4a";
-      const filename = `audio/stop${stopId}_${lang}_${Date.now()}.${ext}`;
+      // 1. Lấy client token từ server (xác thực admin, không gửi file)
+      const tokenRes = await fetch(`/api/admin/upload?pathname=${encodeURIComponent(pathname)}`);
+      if (!tokenRes.ok) {
+        const err = (await tokenRes.json()) as { message?: string };
+        throw new Error(err.message ?? `Lỗi lấy token (${tokenRes.status})`);
+      }
+      const { token } = (await tokenRes.json()) as { token: string };
+      setProgress(15);
 
-      setProgress(10);
-      const blob = await blobUpload(filename, file, {
+      // 2. Upload thẳng browser → Vercel Blob CDN (không qua serverless, không bị giới hạn 4.5 MB)
+      const { put: blobPut } = await import("@vercel/blob/client");
+      const blob = await blobPut(pathname, file, {
         access: "public",
-        handleUploadUrl: "/api/admin/upload",
-        clientPayload: JSON.stringify({ stopId, lang }),
+        token,
+        contentType: file.type || `audio/${ext}`,
+        onUploadProgress: ({ percentage }) =>
+          setProgress(15 + Math.round(percentage * 0.75)),
       });
-      setProgress(80);
+      setProgress(90);
 
-      // Save URL to the stop
-      const res = await fetch("/api/admin/audio", {
+      // 3. Lưu URL vào stop
+      const saveRes = await fetch("/api/admin/audio", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stopId, lang, url: blob.url }),
       });
-      const data = (await res.json()) as { ok?: boolean; stop?: Stop; message?: string };
+      const saveData = (await saveRes.json()) as { ok?: boolean; stop?: Stop; message?: string };
 
-      if (res.ok && data.stop) {
-        onUploaded(data.stop);
+      if (saveRes.ok && saveData.stop) {
+        onUploaded(saveData.stop);
         setMsg({ text: "Upload thành công!", ok: true });
       } else {
-        throw new Error(data.message ?? "Lỗi lưu đường dẫn");
+        throw new Error(saveData.message ?? "Lỗi lưu đường dẫn");
       }
-    } catch {
-      // Fallback: FormData (local dev hoặc khi client upload lỗi)
+    } catch (clientErr) {
+      // Fallback: FormData (local dev không có Blob token)
       try {
         const form = new FormData();
         form.append("file", file);
         form.append("stopId", String(stopId));
         form.append("lang", lang);
         const res = await fetch("/api/admin/upload", { method: "POST", body: form });
-        const data = (await res.json()) as { ok?: boolean; path?: string; stop?: Stop; message?: string };
+        const data = (await res.json()) as { ok?: boolean; stop?: Stop; message?: string };
         if (res.ok && data.stop) {
           onUploaded(data.stop);
-          setMsg({ text: "Upload thành công!", ok: true });
+          setMsg({ text: "Upload thành công! (fallback)", ok: true });
         } else {
-          setMsg({ text: data.message ?? "Upload thất bại", ok: false });
+          // Hiển thị lỗi gốc (client upload) và lỗi fallback
+          const origErr = (clientErr as Error).message;
+          setMsg({ text: `${origErr || "Client upload lỗi"} — ${data.message ?? "Fallback cũng thất bại"}`, ok: false });
         }
       } catch (fallbackErr) {
-        setMsg({ text: (fallbackErr as Error).message ?? "Upload thất bại", ok: false });
+        const origErr = (clientErr as Error).message;
+        setMsg({ text: origErr || (fallbackErr as Error).message || "Upload thất bại", ok: false });
       }
     }
 
@@ -318,6 +331,13 @@ function StopEditor({
     onChange({ mapPosition: { ...stop.mapPosition, [axis]: numeric } });
   };
 
+  const handleMapClick = (e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+    onChange({ mapPosition: { x: Math.max(2, Math.min(98, x)), y: Math.max(2, Math.min(98, y)) } });
+  };
+
   return (
     <div className="space-y-6">
       <section className="rounded-2xl bg-white/88 p-5 shadow">
@@ -386,13 +406,61 @@ function StopEditor({
       <section className="rounded-2xl bg-white/88 p-5 shadow">
         <h3 className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">
           <ImageIcon className="size-4" />
-          Anh va ban do
+          Ảnh và vị trí bản đồ
         </h3>
         <div className="grid gap-4 lg:grid-cols-2">
           <ImageUploader stopId={stop.id} current={stop.image} onUploaded={(updated) => onChange(updated)} />
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Toa do X (%)" value={String(stop.mapPosition.x)} onChange={(v) => setMapPosition("x", v)} />
-            <Field label="Toa do Y (%)" value={String(stop.mapPosition.y)} onChange={(v) => setMapPosition("y", v)} />
+          <div className="space-y-3">
+            <p className="text-xs font-black uppercase tracking-wide text-[var(--muted)]">
+              Vị trí trên bản đồ — click để chọn
+            </p>
+            {/* Visual map picker */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#dff6f1] via-[#f7e7b0] to-[#7b4d31]">
+              <svg
+                viewBox="0 0 100 100"
+                className="w-full cursor-crosshair"
+                style={{ height: 180 }}
+                onClick={handleMapClick}
+                role="button"
+                aria-label="Click để đặt vị trí trên bản đồ"
+              >
+                {/* Route path */}
+                <path
+                  d="M10 80 C23 70 26 63 38 57 C51 50 51 42 64 36 C73 31 80 24 90 17"
+                  fill="none"
+                  stroke="rgba(23,32,51,.5)"
+                  strokeWidth="1.5"
+                  strokeDasharray="4 3"
+                />
+                {/* Water */}
+                <path d="M0 83 C14 79 27 89 42 82 C56 75 67 82 100 74 L100 100 L0 100 Z" fill="rgba(0,108,128,.22)" />
+                {/* Current pin */}
+                <circle
+                  cx={stop.mapPosition.x}
+                  cy={stop.mapPosition.y}
+                  r="5"
+                  fill="var(--ocean, #006C80)"
+                  stroke="white"
+                  strokeWidth="1.5"
+                />
+                <text
+                  x={stop.mapPosition.x}
+                  y={stop.mapPosition.y + 1}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fill="white"
+                  fontSize="4"
+                  fontWeight="bold"
+                >
+                  {stop.id}
+                </text>
+              </svg>
+            </div>
+            {/* Manual number inputs as fallback */}
+            <div className="grid grid-cols-2 gap-2">
+              <Field label="X (%)" value={String(stop.mapPosition.x)} onChange={(v) => setMapPosition("x", v)} />
+              <Field label="Y (%)" value={String(stop.mapPosition.y)} onChange={(v) => setMapPosition("y", v)} />
+            </div>
           </div>
         </div>
       </section>
