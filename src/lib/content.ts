@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { put, head, del } from "@vercel/blob";
+import { put, list } from "@vercel/blob";
 import type { FeedbackPayload, FeedbackRecord, NewsPost, SiteContent, Stop, VisitPayload, VisitRecord } from "@/types/content";
 
 // ---------------------------------------------------------------------------
@@ -19,9 +19,9 @@ const visitsPath = path.join(dataDir, "visits.jsonl");
 // Read a text file from Blob (returns null if not found)
 async function blobRead(key: string): Promise<string | null> {
   try {
-    const { url } = await head(key).catch(() => ({ url: null as unknown as string }));
-    if (!url) return null;
-    const res = await fetch(url, { cache: "no-store" });
+    const { blobs } = await list({ prefix: key, limit: 1 });
+    if (!blobs.length) return null;
+    const res = await fetch(blobs[0].url, { cache: "no-store" });
     if (!res.ok) return null;
     return res.text();
   } catch {
@@ -29,9 +29,9 @@ async function blobRead(key: string): Promise<string | null> {
   }
 }
 
-// Write a text file to Blob
+// Write a text file to Blob (addRandomSuffix: false → stable URL, allowOverwrite → upsert)
 async function blobWrite(key: string, content: string): Promise<void> {
-  await put(key, content, { access: "public", allowOverwrite: true });
+  await put(key, content, { access: "public", allowOverwrite: true, addRandomSuffix: false });
 }
 
 // ---------------------------------------------------------------------------
