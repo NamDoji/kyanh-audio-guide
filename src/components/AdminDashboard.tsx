@@ -107,25 +107,63 @@ function AudioUploader({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
-  const [msg, setMsg] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
 
-  const upload = async (file: File) => {
+  const doUpload = async (file: File) => {
     setUploading(true);
-    setMsg("");
-    const form = new FormData();
-    form.append("file", file);
-    form.append("stopId", String(stopId));
-    form.append("lang", lang);
+    setProgress(0);
+    setMsg(null);
 
-    const res = await fetch("/api/admin/upload", { method: "POST", body: form });
-    const data = (await res.json()) as { ok?: boolean; path?: string; stop?: Stop; message?: string };
+    try {
+      // Client-side upload: file goes directly browser → Vercel CDN (no 4.5 MB limit)
+      const { upload: blobUpload } = await import("@vercel/blob/client");
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "m4a";
+      const filename = `audio/stop${stopId}_${lang}_${Date.now()}.${ext}`;
 
-    if (res.ok && data.path && data.stop) {
-      onUploaded(data.stop);
-      setMsg(`Da upload va luu: ${data.path}`);
-    } else {
-      setMsg(data.message ?? "Upload that bai");
+      setProgress(10);
+      const blob = await blobUpload(filename, file, {
+        access: "public",
+        handleUploadUrl: "/api/admin/upload",
+        clientPayload: JSON.stringify({ stopId, lang }),
+      });
+      setProgress(80);
+
+      // Save URL to the stop
+      const res = await fetch("/api/admin/audio", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stopId, lang, url: blob.url }),
+      });
+      const data = (await res.json()) as { ok?: boolean; stop?: Stop; message?: string };
+
+      if (res.ok && data.stop) {
+        onUploaded(data.stop);
+        setMsg({ text: "Upload thành công!", ok: true });
+      } else {
+        throw new Error(data.message ?? "Lỗi lưu đường dẫn");
+      }
+    } catch {
+      // Fallback: FormData (local dev hoặc khi client upload lỗi)
+      try {
+        const form = new FormData();
+        form.append("file", file);
+        form.append("stopId", String(stopId));
+        form.append("lang", lang);
+        const res = await fetch("/api/admin/upload", { method: "POST", body: form });
+        const data = (await res.json()) as { ok?: boolean; path?: string; stop?: Stop; message?: string };
+        if (res.ok && data.stop) {
+          onUploaded(data.stop);
+          setMsg({ text: "Upload thành công!", ok: true });
+        } else {
+          setMsg({ text: data.message ?? "Upload thất bại", ok: false });
+        }
+      } catch (fallbackErr) {
+        setMsg({ text: (fallbackErr as Error).message ?? "Upload thất bại", ok: false });
+      }
     }
+
+    setProgress(100);
     setUploading(false);
   };
 
@@ -134,7 +172,7 @@ function AudioUploader({
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
           <p className="text-xs font-black uppercase tracking-wide text-[var(--muted)]">Audio {lang.toUpperCase()}</p>
-          <p className="mt-0.5 truncate text-sm font-semibold text-[var(--ink)]">{current}</p>
+          <p className="mt-0.5 truncate text-sm font-semibold text-[var(--ink)]">{current || "Chưa có file"}</p>
         </div>
         <div className="flex shrink-0 gap-2">
           {current ? (
@@ -155,11 +193,25 @@ function AudioUploader({
             className="grid size-9 place-items-center rounded-full bg-[var(--ocean)] text-white disabled:opacity-50"
             aria-label={`Upload audio ${lang}`}
           >
-            {uploading ? <span className="size-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <Upload className="size-4" />}
+            {uploading
+              ? <span className="size-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              : <Upload className="size-4" />}
           </button>
         </div>
       </div>
-      {msg ? <p className="mt-2 text-xs font-semibold text-[var(--earth)]">{msg}</p> : null}
+      {uploading && progress > 0 && progress < 100 ? (
+        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--line)]">
+          <div
+            className="h-full rounded-full bg-[var(--ocean)] transition-all"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      ) : null}
+      {msg ? (
+        <p className={`mt-2 text-xs font-semibold ${msg.ok ? "text-green-700" : "text-red-700"}`}>
+          {msg.text}
+        </p>
+      ) : null}
       <input
         ref={inputRef}
         type="file"
@@ -167,7 +219,7 @@ function AudioUploader({
         className="sr-only"
         onChange={(e) => {
           const file = e.target.files?.[0];
-          if (file) upload(file);
+          if (file) doUpload(file);
           e.target.value = "";
         }}
       />
@@ -801,6 +853,7 @@ export function AdminDashboard({ content }: { content: SiteContent }) {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
   const [creating, setCreating] = useState(false);
+  const [stopMobileView, setStopMobileView] = useState<"list" | "editor">("list");
 
   const selectedStop = stops.find((stop) => stop.id === selectedStopId);
 
@@ -808,16 +861,28 @@ export function AdminDashboard({ content }: { content: SiteContent }) {
     setStops((prev) => prev.map((stop) => (stop.id === selectedStopId ? { ...stop, ...patch } : stop)));
   }, [selectedStopId]);
 
+  // Auto-clear save message after 4 s
+  useEffect(() => {
+    if (!saveMsg) return;
+    const t = setTimeout(() => setSaveMsg(""), 4000);
+    return () => clearTimeout(t);
+  }, [saveMsg]);
+
   const saveStop = async () => {
     if (!selectedStop) return;
     setSaving(true);
     setSaveMsg("");
-    const res = await fetch(`/api/stops/${selectedStop.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(selectedStop),
-    });
-    setSaveMsg(res.ok ? "Da luu diem dung" : "Luu that bai");
+    try {
+      const res = await fetch(`/api/stops/${selectedStop.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(selectedStop),
+      });
+      const data = await res.json() as { message?: string };
+      setSaveMsg(res.ok ? "✅ Đã lưu điểm dừng" : `❌ Lỗi: ${data.message ?? "Lưu thất bại"}`);
+    } catch {
+      setSaveMsg("❌ Mất kết nối — thử lại");
+    }
     setSaving(false);
   };
 
@@ -839,6 +904,7 @@ export function AdminDashboard({ content }: { content: SiteContent }) {
       setStops((prev) => [...prev, newStop]);
       setSelectedStopId(newStop.id);
       setTab("stops");
+      setStopMobileView("editor");
     }
     setCreating(false);
   };
@@ -900,13 +966,14 @@ export function AdminDashboard({ content }: { content: SiteContent }) {
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {tab === "stops" ? (
           <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-            <aside className="rounded-2xl border border-[var(--line)] bg-white/88 p-2 shadow-lg">
-              <p className="px-3 pb-2 pt-1 text-xs font-black uppercase tracking-widest text-[var(--muted)]">Danh sach diem dung</p>
+            {/* Sidebar — ẩn trên mobile khi đang xem editor */}
+            <aside className={`rounded-2xl border border-[var(--line)] bg-white/88 p-2 shadow-lg ${stopMobileView === "editor" ? "hidden lg:block" : "block"}`}>
+              <p className="px-3 pb-2 pt-1 text-xs font-black uppercase tracking-widest text-[var(--muted)]">Danh sách điểm dừng</p>
               {[...stops].sort((a, b) => a.id - b.id).map((stop) => (
                 <button
                   key={stop.id}
                   type="button"
-                  onClick={() => setSelectedStopId(stop.id)}
+                  onClick={() => { setSelectedStopId(stop.id); setStopMobileView("editor"); }}
                   className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${selectedStopId === stop.id ? "bg-[var(--ocean)] text-white" : "hover:bg-[var(--sand-soft)]"}`}
                 >
                   <span className={`grid size-8 shrink-0 place-items-center rounded-full text-xs font-black ${selectedStopId === stop.id ? "bg-white/20" : "bg-[var(--sand-soft)] text-[var(--ocean)]"}`}>
@@ -916,13 +983,30 @@ export function AdminDashboard({ content }: { content: SiteContent }) {
                     <span className="block truncate text-sm font-bold">{stop.title.vi}</span>
                     <span className={`block truncate text-xs ${selectedStopId === stop.id ? "text-white/70" : "text-[var(--muted)]"}`}>{stop.duration}</span>
                   </span>
-                  {selectedStopId === stop.id ? <ChevronRight className="size-4 shrink-0" /> : null}
+                  <ChevronRight className="size-4 shrink-0" />
                 </button>
               ))}
             </aside>
 
-            <main>
-              {saveMsg ? <div className="mb-4 rounded-2xl bg-green-50 px-4 py-3 text-sm font-bold text-green-800">{saveMsg}</div> : null}
+            {/* Editor — ẩn trên mobile khi đang xem danh sách */}
+            <main className={stopMobileView === "list" ? "hidden lg:block" : "block"}>
+              {/* Nút quay lại danh sách (chỉ hiện trên mobile) */}
+              <button
+                type="button"
+                onClick={() => setStopMobileView("list")}
+                className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-white px-4 py-2 text-sm font-bold text-[var(--muted)] lg:hidden"
+              >
+                ← Danh sách
+              </button>
+
+              {saveMsg ? (
+                <div className={`mb-4 rounded-2xl px-4 py-3 text-sm font-bold ${
+                  saveMsg.startsWith("✅") ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"
+                }`}>
+                  {saveMsg}
+                </div>
+              ) : null}
+
               {selectedStop ? (
                 <>
                   <div className="mb-4 flex items-center gap-3">
@@ -937,7 +1021,7 @@ export function AdminDashboard({ content }: { content: SiteContent }) {
                 </>
               ) : (
                 <div className="rounded-2xl border-2 border-dashed border-[var(--line)] p-12 text-center text-[var(--muted)]">
-                  Chua co diem dung nao.
+                  Chọn điểm dừng từ danh sách để chỉnh sửa.
                 </div>
               )}
             </main>
