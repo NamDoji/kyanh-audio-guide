@@ -29,9 +29,16 @@ async function blobRead(key: string): Promise<string | null> {
   }
 }
 
-// Write a text file to Blob (addRandomSuffix: false → stable URL, allowOverwrite → upsert)
+// Write a text file to Blob.
+// addRandomSuffix: false  → URL ổn định, có thể tìm lại bằng list().
+// cacheControlMaxAge: 0  → CDN KHÔNG cache → đọc lại ngay sau khi ghi luôn thấy data mới.
 async function blobWrite(key: string, content: string): Promise<void> {
-  await put(key, content, { access: "public", allowOverwrite: true, addRandomSuffix: false });
+  await put(key, content, {
+    access: "public",
+    allowOverwrite: true,
+    addRandomSuffix: false,
+    cacheControlMaxAge: 0,
+  });
 }
 
 // ---------------------------------------------------------------------------
