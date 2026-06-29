@@ -1,199 +1,135 @@
-# Ky Anh Underground Tunnel Audio Guide
+# 🏛️ Kỳ Anh Tunnel Audio Guide
 
-Mobile-first bilingual website for the **Ky Anh Underground Tunnel Audio Guide / Hướng dẫn Audio Địa đạo Kỳ Anh**.
+> **A free, QR-based audio guide for a Vietnamese National Historical Site — built to make history accessible to every visitor, at no cost.**
 
-The site is designed for onsite visitors who scan QR codes at the entrance or at each stop, then listen to audio, read summaries, view an illustrated route map, and send feedback without installing an app.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-kyanh--audio--guide.vercel.app-0070f3?style=flat-square&logo=vercel)](https://kyanh-audio-guide.vercel.app)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-## Features
+---
 
-- Next.js full-stack app with public pages and admin editing UI
-- Vietnamese / English language switch saved in `localStorage`
-- Bilingual audio player with large mobile controls, progress bar, replay, and transcript
-- 6 fixed QR routes: `/stops/1` to `/stops/6`
-- Illustrated route map and printable QR management page
-- Feedback form with validation and local JSONL storage
-- Admin CMS at `/admin` for editing stop titles, summaries, transcripts, audio paths, image paths, and duration
-- Tunnel Mode theme, font size controls, sticky header, and mobile bottom navigation
-- SEO metadata and sitemap
+## 🌍 The Problem
 
-## Tech Stack
+The **Kỳ Anh Underground Tunnel** is a Vietnamese National Historical Site — a 32 km tunnel network built by hand in 1965 by local villagers, sheltering over 1,500 people during wartime. Today, it receives hundreds of visitors each year.
 
-- Frontend: Next.js App Router, React, TypeScript
-- Styling: Tailwind CSS v4 plus CSS variables
-- Data: `data/stops.json`
-- Backend: Next.js API routes
-- QR: `qrcode.react`
-- Icons: `lucide-react`
+Yet most visitors leave without truly understanding what they see:
 
-## Install
+- 🗣️ **No audio guide exists** — visitors rely on a single on-site staff member or skip interpretation entirely
+- 🌐 **International visitors** cannot access explanations in their language
+- 📱 **No app** has ever been built for the site
+- 💸 **Hiring a private guide is expensive** and not accessible to school groups or local families
 
-```bash
-cd /Users/cuongdoji/.openclaw/workspace/code_projects/kyanh-audio-guide
-npm install
+## ✅ The Solution
+
+A **mobile-first, bilingual web app** that visitors open by scanning a QR code at the entrance — no download, no account, no cost.
+
+| Feature | Details |
+|---|---|
+| 🔊 Audio storytelling | 7 stops × 2 languages (Vietnamese + English) |
+| 📱 No app required | Runs in any mobile browser via QR code |
+| 🗺️ Interactive route map | Visual path through all 7 stops |
+| 🌐 Bilingual | Full VI/EN with one-tap language switch |
+| ♿ Accessibility | Large mobile controls, adjustable font size, high contrast tunnel mode |
+| 🛠️ Admin CMS | Site staff can update content without code |
+| 💬 Visitor feedback | Built-in feedback form for continuous improvement |
+
+**Demo:** [kyanh-audio-guide.vercel.app](https://kyanh-audio-guide.vercel.app)
+
+---
+
+## 🏗️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript 5 |
+| Styling | Tailwind CSS v4 |
+| Runtime | React 19 |
+| Storage | Vercel Blob (audio/image), JSON (content) |
+| QR | qrcode.react |
+| Deployment | Vercel (free tier) |
+
+---
+
+## 📐 Architecture
+
+```
+kyanh-audio-guide/
+├── src/app/
+│   ├── page.tsx              # Home / Introduction
+│   ├── stops/[id]/           # Audio stop pages (1–7)
+│   ├── map/                  # Interactive route map
+│   ├── feedback/             # Visitor feedback form
+│   ├── qr/                   # Printable QR management
+│   ├── admin/                # CMS for site staff
+│   └── api/                  # Next.js API routes
+├── data/
+│   └── stops.json            # Bilingual content for all stops
+└── public/
+    ├── audio/                # VI + EN audio files (.mp3)
+    └── images/               # Stop illustrations
 ```
 
-## Run Local
+---
+
+## 🎧 The 7 Stops
+
+| # | Vietnamese | English |
+|---|---|---|
+| 1 | Cổng vào & Bối cảnh lịch sử | Entrance & Historical Context |
+| 2 | Câu chuyện xây dựng | The Construction Story |
+| 3 | Cuộc sống dưới lòng đất | Life Underground |
+| 4 | Hệ thống cảnh báo | The Warning System |
+| 5 | Vị trí chiến lược | Strategic Position |
+| 6 | Di sản và công nhận | Heritage & Recognition |
+| 7 | Điểm kết thúc | Final Stop |
+
+Each stop has: bilingual audio (~2 min), written summary, highlights, and a reflection prompt.
+
+---
+
+## 🚀 Run Locally
 
 ```bash
+git clone https://github.com/NamDoji/kyanh-audio-guide.git
+cd kyanh-audio-guide
+npm install
 npm run dev
 ```
 
-Open:
+Open [http://localhost:3000](http://localhost:3000)
 
-- Local: http://localhost:3000
-- Phone/tablet on same WiFi: use your Mac IP, for example `http://192.168.x.x:3000`
+---
 
-## Build
+## 🌱 Community Impact
 
-```bash
-npm run lint
-npm run build
-```
+This project was built **pro bono** for the local community around Kỳ Anh, Quảng Nam province:
 
-## Content Model
+- **Free to use** — no ticket, no app, no account required for visitors
+- **Preserves oral history** — stories recorded and structured for future generations
+- **Enables independent exploration** — visitors set their own pace without needing a guide
+- **Opens the site to the world** — English support brings international visitors into the story
+- **Transferable model** — the codebase can be adapted for other historical sites in Vietnam with minimal effort
 
-Main content lives in:
+> *"Technology should lower barriers, not build new ones. This project exists because local history deserves to be heard by everyone."*
 
-```text
-data/stops.json
-```
+---
 
-Each stop contains:
+## 🛠️ Content Management
 
-- bilingual title, subtitle, summary, transcript, location, reflection
-- bilingual highlight list
-- audio path for VI and EN
-- image path
-- fixed QR path
-- map marker position
+Site staff (non-technical) can update stop titles, summaries, transcripts, and audio files through the built-in admin panel at `/admin` — no GitHub access or coding knowledge required.
 
-## Admin Editing
+---
 
-Open:
+## 📄 License
 
-```text
-/admin
-```
+MIT — free to fork and adapt for other Vietnamese historical sites.
 
-The MVP admin edits `data/stops.json` through API route:
+---
 
-```text
-PUT /api/stops/:id
-```
+## 👤 Author
 
-This works well for local operation and demos. For production on Vercel/Netlify, replace file writing with a durable store such as PostgreSQL, Supabase, Vercel KV, or a headless CMS.
+**Do Bao Nam** — built as a community service project to support cultural heritage preservation in Quảng Nam province, Vietnam.
 
-## Replace Real Audio
-
-Demo audio files are in:
-
-```text
-public/audio/
-```
-
-Current demo files use `.m4a` because they play well on iOS Safari and Android Chrome:
-
-```text
-stop1_vi.m4a
-stop1_en.m4a
-...
-stop6_vi.m4a
-stop6_en.m4a
-```
-
-To use final recordings:
-
-1. Export each stop as MP3 or M4A.
-2. Place files in `public/audio/`.
-3. Update the path in `/admin` or directly in `data/stops.json`.
-4. Keep one Vietnamese file and one English file for each stop.
-
-Recommended final length: 90-120 seconds per stop.
-
-## Replace Real Images
-
-Placeholder illustrations are in:
-
-```text
-public/images/
-```
-
-Replace or add images such as:
-
-- `tunnel-entrance.jpg`
-- `bamboo-village.jpg`
-- `coastal-village.jpg`
-- `underground-life.jpg`
-- `warning-system.jpg`
-- `strategic-map.jpg`
-- `heritage.jpg`
-
-Then update `image` path in `/admin` or `data/stops.json`.
-
-## Add a New Stop
-
-1. Add a new stop object in `data/stops.json`.
-2. Use the next numeric `id`.
-3. Add bilingual audio paths and image path.
-4. Add the marker position:
-
-```json
-"mapPosition": { "x": 50, "y": 50 }
-```
-
-5. If needed, add a QR sign from `/qr`.
-
-## Deploy
-
-### Vercel
-
-```bash
-npm run build
-vercel
-```
-
-Set:
-
-```text
-NEXT_PUBLIC_SITE_URL=https://your-domain.vn
-```
-
-### Netlify
-
-Use Next.js support, build command:
-
-```text
-npm run build
-```
-
-Publish settings are handled by the Next.js adapter.
-
-### GitHub Pages
-
-This project uses API routes for admin and feedback, so GitHub Pages is only suitable for a static public export after removing backend features or using an external backend.
-
-## Field Launch Checklist
-
-- Replace all demo audio with final VI/EN recordings
-- Replace placeholder illustrations with approved site photos or heritage illustrations
-- Verify QR links use the final domain
-- Print one QR sign per stop
-- Test on iPhone Safari, Android Chrome, iPad, laptop, and desktop
-- Test with mobile data and weak WiFi
-- Confirm audio volume guidance and safety notes are visible
-- Review historical text with the site management board
-- Add production persistence for admin edits and feedback
-- Add contact email/phone for Ban Quản lý di tích
-
-## Routes
-
-- `/` home
-- `/language`
-- `/stops`
-- `/stops/1` ... `/stops/6`
-- `/map`
-- `/qr`
-- `/credits`
-- `/feedback`
-- `/admin`
-- `/sitemap.xml`
+GitHub: [@NamDoji](https://github.com/NamDoji)
