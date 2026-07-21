@@ -25,5 +25,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*", "/api/stops/:path*"],
+  // /api/stops covers both /api/stops (POST create) and /api/stops/:id (PUT/DELETE)
+  matcher: ["/admin/:path*", "/api/admin/:path*", "/api/stops", "/api/stops/:path*"],
 };

@@ -72,20 +72,45 @@ function withDefaults(content: SiteContent): SiteContent {
   };
 }
 
+const EMPTY_SITE: SiteContent = {
+  site: {
+    name: { vi: "Địa đạo Kỳ Anh", en: "Ky Anh Tunnels" },
+    tagline: { vi: "", en: "" },
+    description: { vi: "", en: "" },
+  },
+  stops: [],
+  news: [],
+};
+
+function safeParseJson(raw: string): SiteContent | null {
+  try {
+    return JSON.parse(raw) as SiteContent;
+  } catch {
+    return null;
+  }
+}
+
 export async function getContent(): Promise<SiteContent> {
   if (IS_VERCEL) {
     const raw = await blobRead(BLOB_DATA_KEY);
-    if (raw) return withDefaults(JSON.parse(raw) as SiteContent);
+    if (raw) {
+      const parsed = safeParseJson(raw);
+      if (parsed) return withDefaults(parsed);
+    }
     // Fallback: read from bundled data dir (read-only, initial seed)
     try {
       const seed = await fs.readFile(stopsPath, "utf8");
-      return withDefaults(JSON.parse(seed) as SiteContent);
-    } catch {
-      return withDefaults({ site: { name: "Kỳ Anh Audio Guide", tagline: "", description: "" }, stops: [], news: [] } as unknown as SiteContent);
-    }
+      const parsed = safeParseJson(seed);
+      if (parsed) return withDefaults(parsed);
+    } catch { /* no seed file */ }
+    return withDefaults(EMPTY_SITE);
   }
-  const raw = await fs.readFile(stopsPath, "utf8");
-  return withDefaults(JSON.parse(raw) as SiteContent);
+  try {
+    const raw = await fs.readFile(stopsPath, "utf8");
+    const parsed = safeParseJson(raw);
+    if (parsed) return withDefaults(parsed);
+  } catch { /* file missing on first run */ }
+  return withDefaults(EMPTY_SITE);
 }
 
 export async function saveContent(content: SiteContent): Promise<void> {
@@ -116,9 +141,14 @@ export async function updateStop(id: number, patch: Partial<Stop>): Promise<Stop
     throw new Error(`Stop ${id} was not found`);
   }
 
-  const updated = {
-    ...content.stops[index],
+  const current = content.stops[index];
+  const updated: Stop = {
+    ...current,
     ...patch,
+    // Deep-merge audio and highlights to avoid overwriting the other lang
+    // when two uploads happen close together (minimises race window)
+    audio: patch.audio ? { ...current.audio, ...patch.audio } : current.audio,
+    highlights: patch.highlights ? { ...current.highlights, ...patch.highlights } : current.highlights,
     id,
   };
 
@@ -174,16 +204,13 @@ export async function deleteNewsPost(id: number): Promise<void> {
 // Feedback
 // ---------------------------------------------------------------------------
 export async function appendFeedback(payload: FeedbackPayload): Promise<void> {
-  const record = {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    ...payload,
-    createdAt: new Date().toISOString(),
-  };
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const record = { id, ...payload, createdAt: new Date().toISOString() };
   const line = `${JSON.stringify(record)}\n`;
 
   if (IS_VERCEL) {
-    const existing = (await blobRead(BLOB_FEEDBACK_KEY)) ?? "";
-    await blobWrite(BLOB_FEEDBACK_KEY, existing + line);
+    // Write each record as its own blob to avoid read-modify-write race condition.
+    await blobWrite(`data/feedback/${id}.json`, JSON.stringify(record));
     return;
   }
   await fs.mkdir(dataDir, { recursive: true });
@@ -210,6 +237,17 @@ async function readJsonLines<T>(filePath: string, blobKey: string): Promise<T[]>
 }
 
 export async function getFeedbackRecords() {
+  if (IS_VERCEL) {
+    // Each feedback record is stored as its own blob under data/feedback/
+    const { blobs } = await list({ prefix: "data/feedback/", limit: 1000 });
+    const settled = await Promise.allSettled(
+      blobs.map((b: { url: string }) => fetch(b.url, { cache: "no-store" }).then((r) => r.json() as Promise<FeedbackRecord>))
+    );
+    return (settled as PromiseSettledResult<FeedbackRecord>[])
+      .filter((r): r is PromiseFulfilledResult<FeedbackRecord> => r.status === "fulfilled")
+      .map((r) => r.value)
+      .sort((a: FeedbackRecord, b: FeedbackRecord) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
   const records = await readJsonLines<Partial<FeedbackRecord> & FeedbackPayload & { createdAt: string }>(feedbackPath, BLOB_FEEDBACK_KEY);
   return records.map((record, index) => ({
     ...record,
@@ -218,15 +256,17 @@ export async function getFeedbackRecords() {
 }
 
 export async function deleteFeedbackRecord(id: string): Promise<boolean> {
+  if (IS_VERCEL) {
+    const { blobs } = await list({ prefix: `data/feedback/${id}`, limit: 1 });
+    if (!blobs.length) return false;
+    const { del } = await import("@vercel/blob");
+    await del(blobs[0].url);
+    return true;
+  }
   const records = await getFeedbackRecords();
   const next = records.filter((record) => record.id !== id);
   if (next.length === records.length) return false;
-
   const data = next.map((record) => `${JSON.stringify(record)}`).join("\n") + (next.length ? "\n" : "");
-  if (IS_VERCEL) {
-    await blobWrite(BLOB_FEEDBACK_KEY, data);
-    return true;
-  }
   await fs.mkdir(dataDir, { recursive: true });
   await fs.writeFile(feedbackPath, data, "utf8");
   return true;
@@ -238,6 +278,7 @@ export async function deleteFeedbackRecord(id: string): Promise<boolean> {
 export async function appendVisit(payload: VisitPayload, request: Request): Promise<void> {
   if (!payload.path || payload.path.startsWith("/api") || payload.path.startsWith("/_next")) return;
 
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const record: VisitRecord = {
     ...payload,
     createdAt: new Date().toISOString(),
@@ -247,8 +288,8 @@ export async function appendVisit(payload: VisitPayload, request: Request): Prom
   const line = `${JSON.stringify(record)}\n`;
 
   if (IS_VERCEL) {
-    const existing = (await blobRead(BLOB_VISITS_KEY)) ?? "";
-    await blobWrite(BLOB_VISITS_KEY, existing + line);
+    // Write each visit as its own blob to avoid read-modify-write race condition.
+    await blobWrite(`data/visits/${id}.json`, JSON.stringify(record));
     return;
   }
   await fs.mkdir(dataDir, { recursive: true });
@@ -256,6 +297,16 @@ export async function appendVisit(payload: VisitPayload, request: Request): Prom
 }
 
 export async function getVisitRecords(): Promise<VisitRecord[]> {
+  if (IS_VERCEL) {
+    const { blobs } = await list({ prefix: "data/visits/", limit: 5000 });
+    const settled = await Promise.allSettled(
+      blobs.map((b: { url: string }) => fetch(b.url, { cache: "no-store" }).then((r) => r.json() as Promise<VisitRecord>))
+    );
+    return (settled as PromiseSettledResult<VisitRecord>[])
+      .filter((r): r is PromiseFulfilledResult<VisitRecord> => r.status === "fulfilled")
+      .map((r) => r.value)
+      .sort((a: VisitRecord, b: VisitRecord) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
   return readJsonLines<VisitRecord>(visitsPath, BLOB_VISITS_KEY);
 }
 

@@ -398,8 +398,8 @@ function StopEditor({
           File audio
         </h3>
         <div className="grid gap-3 sm:grid-cols-2">
-          <AudioUploader stopId={stop.id} lang="vi" current={stop.audio.vi} onUploaded={(updated) => onChange(updated)} />
-          <AudioUploader stopId={stop.id} lang="en" current={stop.audio.en} onUploaded={(updated) => onChange(updated)} />
+          <AudioUploader stopId={stop.id} lang="vi" current={stop.audio.vi} onUploaded={(updated) => onChange({ audio: updated.audio })} />
+          <AudioUploader stopId={stop.id} lang="en" current={stop.audio.en} onUploaded={(updated) => onChange({ audio: updated.audio })} />
         </div>
       </section>
 
@@ -409,7 +409,7 @@ function StopEditor({
           Ảnh và vị trí bản đồ
         </h3>
         <div className="grid gap-4 lg:grid-cols-2">
-          <ImageUploader stopId={stop.id} current={stop.image} onUploaded={(updated) => onChange(updated)} />
+          <ImageUploader stopId={stop.id} current={stop.image} onUploaded={(updated) => onChange({ image: updated.image })} />
           <div className="space-y-3">
             <p className="text-xs font-black uppercase tracking-wide text-[var(--muted)]">
               Vị trí trên bản đồ — click để chọn

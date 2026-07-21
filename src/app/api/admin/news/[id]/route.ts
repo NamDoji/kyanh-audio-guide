@@ -33,6 +33,9 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   }
 
   const { id } = await params;
+  const existing = await getNewsPost(Number(id));
+  if (!existing) return NextResponse.json({ message: "Not found" }, { status: 404 });
+
   await deleteNewsPost(Number(id));
   return NextResponse.json({ ok: true });
 }

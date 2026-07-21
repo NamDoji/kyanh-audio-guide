@@ -17,7 +17,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   }
 
   const { id } = await params;
-  const body = (await request.json()) as Partial<Stop>;
+  const body = (await request.json().catch(() => null)) as Partial<Stop> | null;
+  if (!body) return NextResponse.json({ message: "Invalid body" }, { status: 400 });
 
   try {
     const updated = await updateStop(Number(id), body);

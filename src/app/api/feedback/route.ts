@@ -3,7 +3,8 @@ import { appendFeedback } from "@/lib/content";
 import type { FeedbackPayload } from "@/types/content";
 
 export async function POST(request: Request) {
-  const payload = (await request.json()) as FeedbackPayload;
+  const payload = (await request.json().catch(() => null)) as FeedbackPayload | null;
+  if (!payload) return NextResponse.json({ message: "Invalid body" }, { status: 400 });
 
   if (!payload.name || !payload.message || !payload.rating) {
     return NextResponse.json({ message: "Missing required feedback fields" }, { status: 400 });
