@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { PreferenceProvider } from "@/components/PreferenceProvider";
+import { getContent } from "@/lib/content";
 import "./globals.css";
 
 const sans = Be_Vietnam_Pro({
@@ -42,11 +43,12 @@ export const viewport: Viewport = {
   themeColor: "#006c80",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const content = await getContent();
   return (
     <html lang="vi" className={`${sans.variable} ${serif.variable}`}>
       <body>
@@ -54,7 +56,7 @@ export default function RootLayout({
           <AnalyticsTracker />
           <Header />
           <main>{children}</main>
-          <Footer />
+          <Footer contact={content.contact} />
           <BottomNav />
         </PreferenceProvider>
       </body>

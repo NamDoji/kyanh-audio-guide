@@ -5,7 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { QRCodeCanvas } from "qrcode.react";
 import {
+  ArrowDown,
+  ArrowUp,
   BarChart3,
+  BookOpen,
   ChevronRight,
   FilePlus,
   ImageIcon,
@@ -22,10 +25,11 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import type { FeedbackRecord, NewsPost, SiteContent, Stop } from "@/types/content";
+import type { AdminRole } from "@/lib/auth";
+import type { FeedbackRecord, NewsPost, SiteContact, SiteContent, Stop } from "@/types/content";
 
 type Lang = "vi" | "en";
-type AdminTab = "stops" | "news" | "feedback" | "qr" | "stats" | "site";
+type AdminTab = "stops" | "news" | "feedback" | "qr" | "stats" | "site" | "guide";
 
 type StatsPayload = {
   totalVisits: number;
@@ -304,12 +308,14 @@ function StopEditor({
   onSave,
   onDelete,
   saving,
+  canDelete,
 }: {
   stop: Stop;
   onChange: (patch: Partial<Stop>) => void;
   onSave: () => void;
   onDelete: () => void;
   saving: boolean;
+  canDelete: boolean;
 }) {
   const loc = (field: keyof Stop, lang: Lang) => {
     const val = stop[field] as { vi: string; en: string };
@@ -468,15 +474,17 @@ function StopEditor({
       <div className="flex flex-wrap gap-3">
         <button type="button" onClick={onSave} disabled={saving} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--ocean)] px-6 font-black text-white disabled:opacity-50">
           <Save className="size-5" />
-          {saving ? "Dang luu..." : "Luu thay doi"}
+          {saving ? "Đang lưu..." : "Lưu thay đổi"}
         </button>
         <Link href={`/stops/${stop.id}`} target="_blank" className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[var(--line)] bg-white px-5 text-sm font-bold">
           Xem public
         </Link>
-        <button type="button" onClick={onDelete} className="inline-flex min-h-12 items-center gap-2 rounded-full border border-red-200 bg-red-50 px-5 text-sm font-bold text-red-700">
-          <Trash2 className="size-4" />
-          Xoa diem dung
-        </button>
+        {canDelete && (
+          <button type="button" onClick={onDelete} className="inline-flex min-h-12 items-center gap-2 rounded-full border border-red-200 bg-red-50 px-5 text-sm font-bold text-red-700">
+            <Trash2 className="size-4" />
+            Xóa điểm dừng
+          </button>
+        )}
       </div>
     </div>
   );
@@ -487,11 +495,13 @@ function NewsEditor({
   selectedId,
   setSelectedId,
   setPosts,
+  role,
 }: {
   posts: NewsPost[];
   selectedId: number;
   setSelectedId: (id: number) => void;
   setPosts: React.Dispatch<React.SetStateAction<NewsPost[]>>;
+  role: AdminRole;
 }) {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
@@ -602,10 +612,12 @@ function NewsEditor({
                   Xem public
                 </Link>
               ) : null}
-              <button type="button" onClick={deletePost} className="inline-flex min-h-12 items-center gap-2 rounded-full border border-red-200 bg-red-50 px-5 text-sm font-bold text-red-700">
-                <Trash2 className="size-4" />
-                Xoa tin
-              </button>
+              {role === "admin" && (
+                <button type="button" onClick={deletePost} className="inline-flex min-h-12 items-center gap-2 rounded-full border border-red-200 bg-red-50 px-5 text-sm font-bold text-red-700">
+                  <Trash2 className="size-4" />
+                  Xóa tin
+                </button>
+              )}
             </div>
           </div>
         ) : (
@@ -868,53 +880,207 @@ function FeedbackManager() {
 function SiteSettings({
   site,
   setSite,
+  contact,
+  setContact,
 }: {
   site: SiteContent["site"];
   setSite: React.Dispatch<React.SetStateAction<SiteContent["site"]>>;
+  contact: SiteContact;
+  setContact: React.Dispatch<React.SetStateAction<SiteContact>>;
 }) {
-  const [saving, setSaving] = useState(false);
+  const [savingSite, setSavingSite] = useState(false);
+  const [savingContact, setSavingContact] = useState(false);
   const [msg, setMsg] = useState("");
 
   const setLoc = (field: keyof SiteContent["site"], lang: Lang, value: string) => {
     setSite((prev) => ({ ...prev, [field]: { ...prev[field], [lang]: value } }));
   };
 
-  const save = async () => {
-    setSaving(true);
+  const setContactLoc = (field: keyof SiteContact, lang: Lang, value: string) => {
+    setContact((prev) => ({
+      ...prev,
+      [field]: { ...(prev[field] ?? { vi: "", en: "" }), [lang]: value },
+    }));
+  };
+
+  const saveSite = async () => {
+    setSavingSite(true);
     setMsg("");
     const res = await fetch("/api/admin/site", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(site),
     });
-    setMsg(res.ok ? "Da luu cau hinh site" : "Luu cau hinh that bai");
-    setSaving(false);
+    setMsg(res.ok ? "✅ Đã lưu cấu hình site" : "❌ Lưu cấu hình thất bại");
+    setSavingSite(false);
+  };
+
+  const saveContactInfo = async () => {
+    setSavingContact(true);
+    setMsg("");
+    const res = await fetch("/api/admin/contact", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(contact),
+    });
+    setMsg(res.ok ? "✅ Đã lưu thông tin liên hệ" : "❌ Lưu thất bại");
+    setSavingContact(false);
   };
 
   return (
     <div className="space-y-6">
-      {msg ? <div className="rounded-2xl bg-green-50 px-4 py-3 text-sm font-bold text-green-800">{msg}</div> : null}
-      <section className="rounded-2xl bg-white/88 p-5 shadow">
-        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Cau hinh trang chu</h3>
-        <div className="space-y-4">
-          <BilingualField label="Ten site" vi={site.name.vi} en={site.name.en} onVi={(v) => setLoc("name", "vi", v)} onEn={(v) => setLoc("name", "en", v)} />
-          <BilingualField label="Tagline" vi={site.tagline.vi} en={site.tagline.en} onVi={(v) => setLoc("tagline", "vi", v)} onEn={(v) => setLoc("tagline", "en", v)} />
-          <BilingualField label="Mo ta" vi={site.description.vi} en={site.description.en} onVi={(v) => setLoc("description", "vi", v)} onEn={(v) => setLoc("description", "en", v)} multiline rows={4} />
+      {msg ? (
+        <div className={`rounded-2xl px-4 py-3 text-sm font-bold ${msg.startsWith("✅") ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+          {msg}
         </div>
+      ) : null}
+
+      <section className="rounded-2xl bg-white/88 p-5 shadow">
+        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Cấu hình trang chủ</h3>
+        <div className="space-y-4">
+          <BilingualField label="Tên site" vi={site.name.vi} en={site.name.en} onVi={(v) => setLoc("name", "vi", v)} onEn={(v) => setLoc("name", "en", v)} />
+          <BilingualField label="Tagline" vi={site.tagline.vi} en={site.tagline.en} onVi={(v) => setLoc("tagline", "vi", v)} onEn={(v) => setLoc("tagline", "en", v)} />
+          <BilingualField label="Mô tả" vi={site.description.vi} en={site.description.en} onVi={(v) => setLoc("description", "vi", v)} onEn={(v) => setLoc("description", "en", v)} multiline rows={4} />
+        </div>
+        <button type="button" onClick={saveSite} disabled={savingSite} className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--ocean)] px-6 font-black text-white disabled:opacity-50">
+          <Save className="size-5" />
+          {savingSite ? "Đang lưu..." : "Lưu cấu hình site"}
+        </button>
       </section>
-      <button type="button" onClick={save} disabled={saving} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--ocean)] px-6 font-black text-white disabled:opacity-50">
-        <Save className="size-5" />
-        {saving ? "Dang luu..." : "Luu cau hinh"}
-      </button>
+
+      <section className="rounded-2xl bg-white/88 p-5 shadow">
+        <h3 className="mb-1 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Thông tin liên hệ (Chân trang)</h3>
+        <p className="mb-4 text-xs text-[var(--muted)]">Hiển thị ở Footer website. Để trống nếu không muốn hiển thị.</p>
+        <div className="space-y-4">
+          <BilingualField label="Số điện thoại" vi={contact.phone?.vi ?? ""} en={contact.phone?.en ?? ""} onVi={(v) => setContactLoc("phone", "vi", v)} onEn={(v) => setContactLoc("phone", "en", v)} />
+          <BilingualField label="Giờ mở cửa" vi={contact.hours?.vi ?? ""} en={contact.hours?.en ?? ""} onVi={(v) => setContactLoc("hours", "vi", v)} onEn={(v) => setContactLoc("hours", "en", v)} />
+          <BilingualField label="Địa chỉ" vi={contact.address?.vi ?? ""} en={contact.address?.en ?? ""} onVi={(v) => setContactLoc("address", "vi", v)} onEn={(v) => setContactLoc("address", "en", v)} />
+        </div>
+        <button type="button" onClick={saveContactInfo} disabled={savingContact} className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--ocean)] px-6 font-black text-white disabled:opacity-50">
+          <Save className="size-5" />
+          {savingContact ? "Đang lưu..." : "Lưu thông tin liên hệ"}
+        </button>
+      </section>
     </div>
   );
 }
 
-export function AdminDashboard({ content }: { content: SiteContent }) {
+function GuidePanel() {
+  return (
+    <div className="space-y-6">
+      <section className="rounded-2xl bg-white/88 p-5 shadow">
+        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">🎵 Thông số chuẩn File Audio</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <tbody className="divide-y divide-[var(--line)]">
+              {[
+                ["Định dạng", "MP3 (khuyến nghị) hoặc M4A/AAC", "Hỗ trợ toàn bộ trình duyệt di động"],
+                ["Bitrate", "128 kbps (mono) / 192 kbps (stereo)", "Nghe rõ, file nhỏ, tải nhanh 3G"],
+                ["Dung lượng tối đa", "10 MB / file", "Audio ~2 phút ≈ 2–3 MB ở 128kbps"],
+                ["Sample rate", "44.1 kHz", "Tiêu chuẩn audio web"],
+                ["Kênh", "Mono hoặc Stereo", "Mono nhỏ hơn 50%, khuyến nghị cho thuyết minh"],
+              ].map(([label, value, note]) => (
+                <tr key={label} className="hover:bg-[var(--sand-soft)]">
+                  <td className="py-2.5 pr-4 font-black text-[var(--ink)] whitespace-nowrap">{label}</td>
+                  <td className="py-2.5 pr-4 font-semibold text-[var(--ocean)]">{value}</td>
+                  <td className="py-2.5 text-xs text-[var(--muted)]">{note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 rounded-xl bg-[var(--sand-soft)] p-4 text-sm text-[var(--muted)]">
+          <strong>Cách nén nhanh:</strong> Dùng Audacity (miễn phí) → Export → MP3 → Quality 5 (≈128kbps). Hoặc dùng online: <span className="text-[var(--ocean)]">mp3smaller.com</span>
+        </div>
+      </section>
+
+      <section className="rounded-2xl bg-white/88 p-5 shadow">
+        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">🖼 Thông số chuẩn Hình ảnh</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <tbody className="divide-y divide-[var(--line)]">
+              {[
+                ["Kích thước", "1200 × 800 px (tỷ lệ 3:2)", "Hiển thị đẹp cả desktop lẫn mobile"],
+                ["Định dạng", "JPEG hoặc WebP", "WebP nhỏ hơn ~30% so với JPEG cùng chất lượng"],
+                ["Dung lượng tối đa", "500 KB / ảnh", "Tải nhanh trên 4G, không giật"],
+                ["Chất lượng JPEG", "80–85%", "Mắt thường không phân biệt được với 100%"],
+                ["Không gian màu", "sRGB", "Màu chuẩn trên mọi màn hình"],
+              ].map(([label, value, note]) => (
+                <tr key={label} className="hover:bg-[var(--sand-soft)]">
+                  <td className="py-2.5 pr-4 font-black text-[var(--ink)] whitespace-nowrap">{label}</td>
+                  <td className="py-2.5 pr-4 font-semibold text-[var(--ocean)]">{value}</td>
+                  <td className="py-2.5 text-xs text-[var(--muted)]">{note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 rounded-xl bg-[var(--sand-soft)] p-4 text-sm text-[var(--muted)]">
+          <strong>Công cụ nén ảnh miễn phí:</strong> <span className="text-[var(--ocean)]">squoosh.app</span> (Google) hoặc <span className="text-[var(--ocean)]">tinypng.com</span> — kéo thả ảnh, tải về ảnh đã nén.
+        </div>
+      </section>
+
+      <section className="rounded-2xl bg-white/88 p-5 shadow">
+        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">🌐 Chuyển ngôn ngữ</h3>
+        <p className="text-sm leading-7 text-[var(--muted)]">
+          Khách đang xem Điểm 1 tiếng Việt → bấm nút <strong>EN</strong> → trang tự động chuyển sang nội dung tiếng Anh của <em>cùng điểm đó</em>, không về trang chủ. Mỗi điểm dừng lưu cả hai ngôn ngữ cùng một URL (<code>/stops/1</code>), ngôn ngữ được lưu trong bộ nhớ trình duyệt của khách.
+        </p>
+        <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
+          Để thêm nội dung tiếng Anh cho điểm: vào tab <strong>Điểm dừng</strong> → chọn điểm → điền vào ô <strong>EN</strong> của từng trường (tiêu đề, tóm tắt, v.v.) → upload audio EN riêng → Lưu.
+        </p>
+      </section>
+
+      <section className="rounded-2xl bg-white/88 p-5 shadow">
+        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">🔢 Sắp xếp thứ tự điểm dừng</h3>
+        <p className="text-sm leading-7 text-[var(--muted)]">
+          Dùng nút <strong>↑</strong> / <strong>↓</strong> trong danh sách điểm dừng để thay đổi thứ tự hiển thị. Ví dụ: tạo &ldquo;Điểm 2A&rdquo; mới → kéo lên giữa Điểm 2 và Điểm 3 bằng nút mũi tên.
+        </p>
+      </section>
+
+      <section className="rounded-2xl bg-white/88 p-5 shadow">
+        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">👥 Phân quyền tài khoản</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[var(--line)]">
+                <th className="py-2 text-left font-black text-[var(--ink)]">Quyền</th>
+                <th className="py-2 text-center font-black text-[var(--ocean)]">Admin</th>
+                <th className="py-2 text-center font-black text-[var(--muted)]">Editor</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--line)]">
+              {[
+                ["Xem & chỉnh sửa nội dung", "✅", "✅"],
+                ["Tạo điểm mới / tin tức mới", "✅", "✅"],
+                ["Upload audio & hình ảnh", "✅", "✅"],
+                ["Sắp xếp thứ tự điểm dừng", "✅", "✅"],
+                ["Xóa điểm / tin tức", "✅", "❌"],
+                ["Cấu hình site & liên hệ", "✅", "❌"],
+                ["Xem thống kê & phản hồi", "✅", "✅"],
+              ].map(([action, admin, editor]) => (
+                <tr key={action} className="hover:bg-[var(--sand-soft)]">
+                  <td className="py-2.5 pr-4 text-[var(--muted)]">{action}</td>
+                  <td className="py-2.5 text-center font-bold">{admin}</td>
+                  <td className="py-2.5 text-center font-bold">{editor}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 rounded-xl bg-[var(--sand-soft)] p-4 text-sm text-[var(--muted)]">
+          Để tạo tài khoản Editor: thêm biến môi trường <code className="rounded bg-white px-1">EDITOR_PASSWORD</code> vào Vercel Dashboard → Settings → Environment Variables. Nhân viên dùng mật khẩu Editor để đăng nhập.
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export function AdminDashboard({ content, role }: { content: SiteContent; role: AdminRole }) {
   const router = useRouter();
   const [tab, setTab] = useState<AdminTab>("stops");
   const [site, setSite] = useState(content.site);
-  const [stops, setStops] = useState<Stop[]>(content.stops);
+  const [contact, setContact] = useState<SiteContact>(content.contact ?? { phone: { vi: "", en: "" }, hours: { vi: "", en: "" }, address: { vi: "", en: "" } });
+  const [stops, setStops] = useState<Stop[]>(() => [...content.stops].sort((a, b) => (a.order ?? a.id) - (b.order ?? b.id)));
   const [news, setNews] = useState<NewsPost[]>(content.news);
   const [selectedStopId, setSelectedStopId] = useState<number>(content.stops[0]?.id ?? 1);
   const [selectedNewsId, setSelectedNewsId] = useState<number>(content.news[0]?.id ?? 0);
@@ -983,14 +1149,39 @@ export function AdminDashboard({ content }: { content: SiteContent }) {
     router.refresh();
   };
 
-  const tabs: { id: AdminTab; label: string; icon: typeof LayoutDashboard }[] = [
-    { id: "stops", label: "Diem dung", icon: LayoutDashboard },
-    { id: "news", label: "Tin tuc", icon: Newspaper },
-    { id: "feedback", label: "Phan hoi", icon: MessageSquareText },
+  const reorderStop = async (stopId: number, direction: "up" | "down") => {
+    const res = await fetch("/api/admin/stops/reorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ stopId, direction }),
+    });
+    if (res.ok) {
+      setStops((prev) => {
+        const sorted = [...prev].sort((a, b) => (a.order ?? a.id) - (b.order ?? b.id));
+        const idx = sorted.findIndex((s) => s.id === stopId);
+        const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+        if (swapIdx < 0 || swapIdx >= sorted.length) return prev;
+        const aOrder = sorted[idx].order ?? sorted[idx].id;
+        const bOrder = sorted[swapIdx].order ?? sorted[swapIdx].id;
+        return prev.map((s) => {
+          if (s.id === sorted[idx].id) return { ...s, order: bOrder };
+          if (s.id === sorted[swapIdx].id) return { ...s, order: aOrder };
+          return s;
+        });
+      });
+    }
+  };
+
+  const allTabs: { id: AdminTab; label: string; icon: typeof LayoutDashboard; adminOnly?: boolean }[] = [
+    { id: "stops", label: "Điểm dừng", icon: LayoutDashboard },
+    { id: "news", label: "Tin tức", icon: Newspaper },
+    { id: "feedback", label: "Phản hồi", icon: MessageSquareText },
     { id: "qr", label: "QR code", icon: QrCode },
-    { id: "stats", label: "Thong ke", icon: BarChart3 },
-    { id: "site", label: "Cau hinh", icon: Settings },
+    { id: "stats", label: "Thống kê", icon: BarChart3 },
+    { id: "site", label: "Cấu hình", icon: Settings, adminOnly: true },
+    { id: "guide", label: "Hướng dẫn", icon: BookOpen },
   ];
+  const tabs = allTabs.filter((t) => !t.adminOnly || role === "admin");
 
   return (
     <div className="min-h-screen">
@@ -998,8 +1189,13 @@ export function AdminDashboard({ content }: { content: SiteContent }) {
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-[var(--ocean)]">Admin CMS</p>
-              <h2 className="text-lg font-black text-[var(--ink)]">Quan ly he thong Dia dao Ky Anh</h2>
+              <div className="flex items-center gap-2">
+                <p className="text-xs font-black uppercase tracking-widest text-[var(--ocean)]">Admin CMS</p>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-black ${role === "admin" ? "bg-[var(--ocean)] text-white" : "bg-amber-100 text-amber-800"}`}>
+                  {role === "admin" ? "Admin" : "Editor"}
+                </span>
+              </div>
+              <h2 className="text-lg font-black text-[var(--ink)]">Quản lý hệ thống Địa đạo Kỳ Anh</h2>
             </div>
             <div className="flex flex-wrap gap-2">
               <button type="button" onClick={createStop} disabled={creating} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[var(--bamboo)] px-4 text-sm font-bold text-white disabled:opacity-50">
@@ -1037,22 +1233,43 @@ export function AdminDashboard({ content }: { content: SiteContent }) {
             {/* Sidebar — ẩn trên mobile khi đang xem editor */}
             <aside className={`rounded-2xl border border-[var(--line)] bg-white/88 p-2 shadow-lg ${stopMobileView === "editor" ? "hidden lg:block" : "block"}`}>
               <p className="px-3 pb-2 pt-1 text-xs font-black uppercase tracking-widest text-[var(--muted)]">Danh sách điểm dừng</p>
-              {[...stops].sort((a, b) => a.id - b.id).map((stop) => (
-                <button
-                  key={stop.id}
-                  type="button"
-                  onClick={() => { setSelectedStopId(stop.id); setStopMobileView("editor"); }}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${selectedStopId === stop.id ? "bg-[var(--ocean)] text-white" : "hover:bg-[var(--sand-soft)]"}`}
-                >
-                  <span className={`grid size-8 shrink-0 place-items-center rounded-full text-xs font-black ${selectedStopId === stop.id ? "bg-white/20" : "bg-[var(--sand-soft)] text-[var(--ocean)]"}`}>
-                    {stop.id}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-bold">{stop.title.vi}</span>
-                    <span className={`block truncate text-xs ${selectedStopId === stop.id ? "text-white/70" : "text-[var(--muted)]"}`}>{stop.duration}</span>
-                  </span>
-                  <ChevronRight className="size-4 shrink-0" />
-                </button>
+              {[...stops].sort((a, b) => (a.order ?? a.id) - (b.order ?? b.id)).map((stop, idx, arr) => (
+                <div key={stop.id} className="flex items-center gap-1">
+                  <div className="flex flex-col gap-0.5">
+                    <button
+                      type="button"
+                      disabled={idx === 0}
+                      onClick={() => reorderStop(stop.id, "up")}
+                      className="grid size-6 place-items-center rounded-lg text-[var(--muted)] hover:bg-[var(--sand-soft)] disabled:opacity-20"
+                      aria-label={`Move stop ${stop.id} up`}
+                    >
+                      <ArrowUp className="size-3" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={idx === arr.length - 1}
+                      onClick={() => reorderStop(stop.id, "down")}
+                      className="grid size-6 place-items-center rounded-lg text-[var(--muted)] hover:bg-[var(--sand-soft)] disabled:opacity-20"
+                      aria-label={`Move stop ${stop.id} down`}
+                    >
+                      <ArrowDown className="size-3" />
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedStopId(stop.id); setStopMobileView("editor"); }}
+                    className={`flex flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${selectedStopId === stop.id ? "bg-[var(--ocean)] text-white" : "hover:bg-[var(--sand-soft)]"}`}
+                  >
+                    <span className={`grid size-8 shrink-0 place-items-center rounded-full text-xs font-black ${selectedStopId === stop.id ? "bg-white/20" : "bg-[var(--sand-soft)] text-[var(--ocean)]"}`}>
+                      {stop.id}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-bold">{stop.title.vi}</span>
+                      <span className={`block truncate text-xs ${selectedStopId === stop.id ? "text-white/70" : "text-[var(--muted)]"}`}>{stop.duration}</span>
+                    </span>
+                    <ChevronRight className="size-4 shrink-0" />
+                  </button>
+                </div>
               ))}
             </aside>
 
@@ -1085,7 +1302,7 @@ export function AdminDashboard({ content }: { content: SiteContent }) {
                     </div>
                     <Pencil className="ml-auto size-5 text-[var(--muted)]" />
                   </div>
-                  <StopEditor stop={selectedStop} onChange={updateStop} onSave={saveStop} onDelete={deleteStop} saving={saving} />
+                  <StopEditor stop={selectedStop} onChange={updateStop} onSave={saveStop} onDelete={deleteStop} saving={saving} canDelete={role === "admin"} />
                 </>
               ) : (
                 <div className="rounded-2xl border-2 border-dashed border-[var(--line)] p-12 text-center text-[var(--muted)]">
@@ -1096,11 +1313,12 @@ export function AdminDashboard({ content }: { content: SiteContent }) {
           </div>
         ) : null}
 
-        {tab === "news" ? <NewsEditor posts={news} selectedId={selectedNewsId} setSelectedId={setSelectedNewsId} setPosts={setNews} /> : null}
+        {tab === "news" ? <NewsEditor posts={news} selectedId={selectedNewsId} setSelectedId={setSelectedNewsId} setPosts={setNews} role={role} /> : null}
         {tab === "feedback" ? <FeedbackManager /> : null}
         {tab === "qr" ? <QRManager stops={stops} /> : null}
         {tab === "stats" ? <StatsPanel stops={stops} /> : null}
-        {tab === "site" ? <SiteSettings site={site} setSite={setSite} /> : null}
+        {tab === "site" && role === "admin" ? <SiteSettings site={site} setSite={setSite} contact={contact} setContact={setContact} /> : null}
+        {tab === "guide" ? <GuidePanel /> : null}
       </div>
     </div>
   );

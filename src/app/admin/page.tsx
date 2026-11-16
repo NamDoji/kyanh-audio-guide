@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { isAdminAuthenticated } from "@/lib/auth";
+import { isAdminAuthenticated, getAdminRole } from "@/lib/auth";
 import { getContent } from "@/lib/content";
 import { AdminDashboard } from "@/components/AdminDashboard";
 
@@ -10,6 +10,6 @@ export default async function AdminPage() {
   const auth = await isAdminAuthenticated();
   if (!auth) redirect("/admin/login");
 
-  const content = await getContent();
-  return <AdminDashboard content={content} />;
+  const [role, content] = await Promise.all([getAdminRole(), getContent()]);
+  return <AdminDashboard content={content} role={role ?? "editor"} />;
 }

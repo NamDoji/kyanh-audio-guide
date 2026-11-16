@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { isAdminAuthenticated } from "@/lib/auth";
+import { getAdminRole } from "@/lib/auth";
 import { getContent, saveContent } from "@/lib/content";
 import type { SiteContent } from "@/types/content";
 
 export async function PUT(request: Request) {
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const role = await getAdminRole();
+  if (!role) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  if (role !== "admin") return NextResponse.json({ message: "Admin role required" }, { status: 403 });
 
   const body = (await request.json().catch(() => null)) as Partial<SiteContent["site"]> | null;
   if (!body?.name || !body.tagline || !body.description) {

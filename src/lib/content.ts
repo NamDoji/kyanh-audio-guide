@@ -1,7 +1,8 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { cache } from "react";
 import { put, list } from "@vercel/blob";
-import type { FeedbackPayload, FeedbackRecord, NewsPost, SiteContent, Stop, VisitPayload, VisitRecord } from "@/types/content";
+import type { FeedbackPayload, FeedbackRecord, NewsPost, SiteContact, SiteContent, Stop, VisitPayload, VisitRecord } from "@/types/content";
 
 // ---------------------------------------------------------------------------
 // Storage helpers: Vercel Blob (production) vs local filesystem (dev)
@@ -69,6 +70,11 @@ function withDefaults(content: SiteContent): SiteContent {
   return {
     ...content,
     news: Array.isArray(content.news) ? content.news : defaultNews,
+    contact: content.contact ?? {
+      phone: { vi: "", en: "" },
+      hours: { vi: "", en: "" },
+      address: { vi: "", en: "" },
+    },
   };
 }
 
@@ -77,6 +83,11 @@ const EMPTY_SITE: SiteContent = {
     name: { vi: "Địa đạo Kỳ Anh", en: "Ky Anh Tunnels" },
     tagline: { vi: "", en: "" },
     description: { vi: "", en: "" },
+  },
+  contact: {
+    phone: { vi: "", en: "" },
+    hours: { vi: "", en: "" },
+    address: { vi: "", en: "" },
   },
   stops: [],
   news: [],
@@ -90,7 +101,7 @@ function safeParseJson(raw: string): SiteContent | null {
   }
 }
 
-export async function getContent(): Promise<SiteContent> {
+export const getContent = cache(async function getContentImpl(): Promise<SiteContent> {
   if (IS_VERCEL) {
     const raw = await blobRead(BLOB_DATA_KEY);
     if (raw) {
@@ -111,7 +122,7 @@ export async function getContent(): Promise<SiteContent> {
     if (parsed) return withDefaults(parsed);
   } catch { /* file missing on first run */ }
   return withDefaults(EMPTY_SITE);
-}
+});
 
 export async function saveContent(content: SiteContent): Promise<void> {
   const data = `${JSON.stringify(withDefaults(content), null, 2)}\n`;
@@ -125,7 +136,7 @@ export async function saveContent(content: SiteContent): Promise<void> {
 
 export async function getStops(): Promise<Stop[]> {
   const content = await getContent();
-  return content.stops.sort((a, b) => a.id - b.id);
+  return [...content.stops].sort((a, b) => (a.order ?? a.id) - (b.order ?? b.id));
 }
 
 export async function getStop(id: number): Promise<Stop | undefined> {
@@ -155,6 +166,32 @@ export async function updateStop(id: number, patch: Partial<Stop>): Promise<Stop
   content.stops[index] = updated;
   await saveContent(content);
   return updated;
+}
+
+export async function reorderStop(stopId: number, direction: "up" | "down"): Promise<void> {
+  const content = await getContent();
+  const sorted = [...content.stops].sort((a, b) => (a.order ?? a.id) - (b.order ?? b.id));
+  const idx = sorted.findIndex((s) => s.id === stopId);
+  if (idx < 0) throw new Error(`Stop ${stopId} not found`);
+
+  const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+  if (swapIdx < 0 || swapIdx >= sorted.length) return;
+
+  const aOrder = sorted[idx].order ?? sorted[idx].id;
+  const bOrder = sorted[swapIdx].order ?? sorted[swapIdx].id;
+
+  const aRef = content.stops.find((s) => s.id === sorted[idx].id)!;
+  const bRef = content.stops.find((s) => s.id === sorted[swapIdx].id)!;
+  aRef.order = bOrder;
+  bRef.order = aOrder;
+
+  await saveContent(content);
+}
+
+export async function saveContact(contact: SiteContact): Promise<void> {
+  const content = await getContent();
+  content.contact = contact;
+  await saveContent(content);
 }
 
 export async function getNewsPosts(includeDrafts = false): Promise<NewsPost[]> {

@@ -18,10 +18,12 @@ export async function POST(request: Request) {
 
   const content = await getContent();
   const maxId = content.stops.reduce((m, s) => Math.max(m, s.id), 0);
+  const maxOrder = content.stops.reduce((m, s) => Math.max(m, s.order ?? s.id), 0);
   const newId = maxId + 1;
 
   const blank: Stop = {
     id: newId,
+    order: maxOrder + 1,
     slug: body.slug ?? `stop-${newId}`,
     title: body.title ?? { vi: `Điểm ${newId}`, en: `Stop ${newId}` },
     subtitle: body.subtitle ?? { vi: "", en: "" },

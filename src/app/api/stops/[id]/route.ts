@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getContent, saveContent, updateStop } from "@/lib/content";
-import { isAdminAuthenticated } from "@/lib/auth";
+import { isAdminAuthenticated, getAdminRole } from "@/lib/auth";
 import type { Stop } from "@/types/content";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -32,9 +32,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const role = await getAdminRole();
+  if (!role) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  if (role !== "admin") return NextResponse.json({ message: "Admin role required" }, { status: 403 });
 
   const { id } = await params;
   const content = await getContent();

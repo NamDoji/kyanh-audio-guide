@@ -12,6 +12,7 @@ export type LocalizedList = {
 
 export type Stop = {
   id: number;
+  order?: number;
   slug: string;
   title: LocalizedText;
   subtitle: LocalizedText;
@@ -41,12 +42,19 @@ export type NewsPost = {
   status: "draft" | "published";
 };
 
+export type SiteContact = {
+  phone?: LocalizedText;
+  hours?: LocalizedText;
+  address?: LocalizedText;
+};
+
 export type SiteContent = {
   site: {
     name: LocalizedText;
     tagline: LocalizedText;
     description: LocalizedText;
   };
+  contact?: SiteContact;
   stops: Stop[];
   news: NewsPost[];
 };
