@@ -10,6 +10,7 @@ import {
   BarChart3,
   BookOpen,
   ChevronRight,
+  Download,
   FilePlus,
   ImageIcon,
   LayoutDashboard,
@@ -651,7 +652,7 @@ function QRDownloadCard({ stop, baseUrl }: { stop: Stop; baseUrl: string }) {
           <h3 className="mt-2 text-lg font-black text-[var(--ink)]">{stop.title.vi}</h3>
         </div>
         <button type="button" onClick={download} className="grid size-10 place-items-center rounded-full bg-[var(--ocean)] text-white" aria-label="Download QR">
-          <Upload className="size-4" />
+          <Download className="size-4" />
         </button>
       </div>
       <div ref={wrapRef} className="mt-4 grid place-items-center rounded-2xl bg-white p-4">

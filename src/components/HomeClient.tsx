@@ -111,7 +111,7 @@ export function HomeClient({ content }: { content: SiteContent }) {
                 : "Each QR sign links to its stop page so visitors hear the correct audio where they stand."}
             </p>
           </div>
-          <Link href={`/stops/${stops[0]?.id ?? 1}`} className="mt-5 inline-flex min-h-14 items-center justify-center rounded-full bg-white px-6 font-black text-[var(--ocean)] lg:mt-0">
+          <Link href={stops[0] ? `/stops/${stops[0].id}` : "/stops"} className="mt-5 inline-flex min-h-14 items-center justify-center rounded-full bg-white px-6 font-black text-[var(--ocean)] lg:mt-0">
             {lang === "vi" ? "Bắt đầu nghe audio" : "Start listening"}
           </Link>
         </div>

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getContent, saveContent, updateStop } from "@/lib/content";
+import { getContent, loadContent, saveContent, updateStop } from "@/lib/content";
 import { isAdminAuthenticated, getAdminRole } from "@/lib/auth";
 import type { Stop } from "@/types/content";
 
@@ -37,7 +37,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   if (role !== "admin") return NextResponse.json({ message: "Admin role required" }, { status: 403 });
 
   const { id } = await params;
-  const content = await getContent();
+  const content = await loadContent();
   const index = content.stops.findIndex((s) => s.id === Number(id));
   if (index < 0) return NextResponse.json({ message: "Not found" }, { status: 404 });
 

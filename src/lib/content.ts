@@ -101,7 +101,7 @@ function safeParseJson(raw: string): SiteContent | null {
   }
 }
 
-async function loadContent(): Promise<SiteContent> {
+export async function loadContent(): Promise<SiteContent> {
   if (IS_VERCEL) {
     const raw = await blobRead(BLOB_DATA_KEY);
     if (raw) {

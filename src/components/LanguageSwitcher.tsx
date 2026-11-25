@@ -26,7 +26,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
           aria-pressed={lang === option}
           aria-label={`Switch language to ${labels[option]}`}
           onClick={() => setLang(option)}
-          className={`min-h-11 rounded-full px-3 text-sm font-semibold transition ${
+          className={`min-h-11 min-w-11 rounded-full px-3 text-sm font-semibold transition ${
             lang === option
               ? "bg-[var(--ocean)] text-white shadow"
               : "text-[var(--ink)] hover:bg-[var(--sand-soft)]"

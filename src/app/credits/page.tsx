@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { Mail, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Ghi nhận",
+  description: "Trân trọng ghi nhận những cá nhân và tổ chức đã đóng góp xây dựng audio guide Địa đạo Kỳ Anh.",
+};
 
 const groups = [
   "Ban Quản lý di tích Địa đạo Kỳ Anh",
@@ -31,13 +37,9 @@ export default function CreditsPage() {
       <div className="mt-8 rounded-[2rem] bg-[var(--ocean)] p-6 text-white">
         <h2 className="text-2xl font-black">Liên hệ / Contact</h2>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-          <a href="mailto:info@example.com" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-5 font-black text-[var(--ocean)]">
-            <Mail aria-hidden className="size-5" />
-            info@example.com
-          </a>
-          <Link href="/feedback" className="inline-flex min-h-12 items-center gap-2 rounded-full border border-white/45 px-5 font-black text-white">
+          <Link href="/feedback" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-5 font-black text-[var(--ocean)]">
             <MessageCircle aria-hidden className="size-5" />
-            Gửi phản hồi
+            Gửi phản hồi / Send feedback
           </Link>
         </div>
       </div>

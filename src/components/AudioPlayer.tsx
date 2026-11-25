@@ -21,7 +21,8 @@ export function AudioPlayer({ stop, lang }: { stop: Stop; lang: Lang }) {
   const [error, setError] = useState("");
   const [loaded, setLoaded] = useState(false);
 
-  const audioSrc = stop.audio[lang];
+  const audioSrc = stop.audio[lang] || "";
+  const hasAudio = audioSrc.length > 0;
   const audioType = audioSrc.endsWith(".mp3")
     ? "audio/mpeg"
     : audioSrc.endsWith(".ogg")
@@ -93,6 +94,12 @@ export function AudioPlayer({ stop, lang }: { stop: Stop; lang: Lang }) {
       className="rounded-[2rem] border border-white/70 bg-white/90 p-4 shadow-xl backdrop-blur tunnel:border-stone-700 tunnel:bg-stone-950/80 sm:p-6"
       aria-label={lang === "vi" ? "Trình phát audio" : "Audio player"}
     >
+      {!hasAudio && (
+        <div role="status" className="mb-4 flex items-center gap-3 rounded-2xl bg-[var(--sand-soft)] p-4 text-sm font-semibold text-[var(--muted)]">
+          <Volume2 aria-hidden className="size-4 shrink-0" />
+          {lang === "vi" ? "Audio cho điểm dừng này chưa có. Hãy đọc transcript bên dưới." : "Audio for this stop is not yet available. Please read the transcript below."}
+        </div>
+      )}
       {/* Hidden audio element */}
       <audio
         ref={audioRef}
@@ -127,8 +134,9 @@ export function AudioPlayer({ stop, lang }: { stop: Stop; lang: Lang }) {
         <button
           type="button"
           onClick={toggle}
+          disabled={!hasAudio}
           aria-label={playing ? (lang === "vi" ? "Tạm dừng" : "Pause") : (lang === "vi" ? "Phát audio" : "Play audio")}
-          className="grid size-16 shrink-0 cursor-pointer place-items-center rounded-full bg-[var(--ocean)] text-white shadow-lg transition-transform active:scale-95 hover:scale-105 focus-visible:outline-4 focus-visible:outline-[var(--ocean)]"
+          className="grid size-16 shrink-0 cursor-pointer place-items-center rounded-full bg-[var(--ocean)] text-white shadow-lg transition-transform disabled:cursor-not-allowed disabled:opacity-40 active:scale-95 hover:scale-105 focus-visible:outline-4 focus-visible:outline-[var(--ocean)]"
           style={{ minWidth: 64, minHeight: 64 }}
         >
           {playing
@@ -192,6 +200,7 @@ export function AudioPlayer({ stop, lang }: { stop: Stop; lang: Lang }) {
           type="button"
           onClick={() => setShowTranscript((v) => !v)}
           aria-expanded={showTranscript}
+          aria-controls={`transcript-${stop.id}`}
           className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-[var(--line)] bg-white px-4 text-sm font-bold text-[var(--ink)] transition hover:bg-[var(--sand-soft)] tunnel:bg-stone-900 tunnel:hover:bg-stone-800"
         >
           <ScrollText aria-hidden className="size-4" />
@@ -215,7 +224,7 @@ export function AudioPlayer({ stop, lang }: { stop: Stop; lang: Lang }) {
 
       {/* Transcript */}
       {showTranscript && (
-        <div className="mt-4 rounded-3xl bg-[var(--sand-soft)] p-5 text-base leading-8 text-[var(--ink)] tunnel:bg-stone-900">
+        <div id={`transcript-${stop.id}`} role="region" aria-label={lang === "vi" ? "Nội dung thuyết minh" : "Transcript"} className="mt-4 rounded-3xl bg-[var(--sand-soft)] p-5 text-base leading-8 text-[var(--ink)] tunnel:bg-stone-900">
           <p className="mb-2 text-xs font-black uppercase tracking-widest text-[var(--muted)]">
             {lang === "vi" ? "Nội dung thuyết minh" : "Transcript"}
           </p>

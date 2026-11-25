@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Compass } from "lucide-react";
 import type { SiteContent } from "@/types/content";
@@ -18,10 +19,12 @@ export function GioiThieuClient({ site }: { site: SiteContent["site"] }) {
       </h1>
 
       <div className="relative mt-8 aspect-[16/9] w-full overflow-hidden rounded-[2rem] shadow-xl">
-        <img
+        <Image
           src="/images/tunnel-entrance.svg"
           alt={lang === "vi" ? "Địa đạo Kỳ Anh" : "Ky Anh Tunnels"}
-          className="h-full w-full object-cover"
+          fill
+          priority
+          className="object-cover"
         />
       </div>
 

@@ -38,7 +38,7 @@ export function LanguagePageClient() {
               <h2 className="mt-5 text-3xl font-black text-[var(--ink)]">{option.title}</h2>
               <p className="mt-3 text-[var(--muted)]">{option.subtitle}</p>
               <span className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--ocean)] px-5 font-black text-white">
-                Continue <ArrowRight aria-hidden className="size-5" />
+                {option.code === "vi" ? "Tiếp tục" : "Continue"} <ArrowRight aria-hidden className="size-5" />
               </span>
             </Link>
           ))}

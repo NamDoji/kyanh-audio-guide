@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Địa đạo Kỳ Anh Audio Guide",
     description: "Hành trình lắng nghe lịch sử dưới lòng đất xứ Quảng.",
-    images: [{ url: "/images/og-cover.jpg", width: 1200, height: 630, alt: "Địa đạo Kỳ Anh" }],
+    images: [{ url: "/images/tunnel-entrance.svg", width: 1200, height: 630, alt: "Địa đạo Kỳ Anh" }],
     locale: "vi_VN",
     alternateLocale: ["en_US"],
   },

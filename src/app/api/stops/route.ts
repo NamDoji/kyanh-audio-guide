@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getContent, saveContent } from "@/lib/content";
+import { getContent, loadContent, saveContent } from "@/lib/content";
 import { isAdminAuthenticated } from "@/lib/auth";
 import type { Stop } from "@/types/content";
 
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null) as Partial<Stop> | null;
   if (!body) return NextResponse.json({ message: "Invalid body" }, { status: 400 });
 
-  const content = await getContent();
+  const content = await loadContent();
   const maxId = content.stops.reduce((m, s) => Math.max(m, s.id), 0);
   const maxOrder = content.stops.reduce((m, s) => Math.max(m, s.order ?? s.id), 0);
   const newId = maxId + 1;

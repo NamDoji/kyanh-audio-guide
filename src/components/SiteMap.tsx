@@ -40,12 +40,12 @@ export function SiteMap({ stops, lang, showOpenMapLink = true }: { stops: Stop[]
           <Link
             key={stop.id}
             href={`/stops/${stop.id}`}
-            aria-label={lang === "vi" ? `Mở điểm dừng ${stop.id}: ${stop.title.vi}` : `Open stop ${stop.id}: ${stop.title.en}`}
+            aria-label={lang === "vi" ? `Mở: ${stop.title.vi}` : `Open: ${stop.title.en}`}
             title={stop.title[lang]}
-            className="absolute grid size-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-[#fff7e7] bg-[var(--ocean)] text-sm font-black text-white shadow-lg transition hover:scale-110 hover:bg-[var(--earth)] focus-visible:outline-4 focus-visible:outline-white"
+            className="absolute grid size-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-[#fff7e7] bg-[var(--ocean)] text-white shadow-lg transition hover:scale-110 hover:bg-[var(--earth)] focus-visible:outline-4 focus-visible:outline-white"
             style={{ left: `${stop.mapPosition.x}%`, top: `${stop.mapPosition.y}%` }}
           >
-            {stop.id}
+            <span className="size-3 rounded-full bg-white/90" aria-hidden />
           </Link>
         ))}
       </div>
@@ -57,8 +57,8 @@ export function SiteMap({ stops, lang, showOpenMapLink = true }: { stops: Stop[]
             href={`/stops/${stop.id}`}
             className="flex min-h-16 items-center gap-3 rounded-3xl border border-[var(--line)] bg-white/80 p-3 transition hover:-translate-y-0.5 hover:shadow-md tunnel:bg-stone-900/80"
           >
-            <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[var(--earth)] text-sm font-black text-white">
-              {stop.id}
+            <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[var(--earth)] text-white">
+              <span className="size-3 rounded-full bg-white/90" aria-hidden />
             </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-black text-[var(--ink)]">{stop.title[lang]}</span>

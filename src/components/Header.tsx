@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Compass } from "lucide-react";
 import { FontSizeControl } from "./FontSizeControl";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -17,11 +18,12 @@ const nav = [
 
 export function Header() {
   const { lang } = usePreferences();
+  const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--shell)]/90 backdrop-blur-xl">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex min-h-11 min-w-0 items-center gap-3 rounded-full pr-2" aria-label="Home">
+        <Link href="/" className="flex min-h-11 min-w-0 items-center gap-3 rounded-full pr-2" aria-label={lang === "vi" ? "Trang chủ" : "Home"}>
           <span className="grid size-11 place-items-center rounded-2xl bg-[var(--ocean)] text-white shadow-lg">
             <Compass aria-hidden className="size-5" />
           </span>
@@ -32,15 +34,19 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main navigation">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="min-h-11 rounded-full px-4 py-3 text-sm font-semibold text-[var(--muted)] transition hover:bg-[var(--sand-soft)] hover:text-[var(--ink)]"
-            >
-              {item[lang]}
-            </Link>
-          ))}
+          {nav.map((item) => {
+            const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={isActive ? "page" : undefined}
+                className={`min-h-11 rounded-full px-4 py-3 text-sm font-semibold transition hover:bg-[var(--sand-soft)] hover:text-[var(--ink)] ${isActive ? "bg-[var(--sand-soft)] font-black text-[var(--ink)]" : "text-[var(--muted)]"}`}
+              >
+                {item[lang]}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
