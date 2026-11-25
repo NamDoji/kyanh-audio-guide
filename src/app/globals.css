@@ -40,6 +40,7 @@
 }
 
 html {
+  font-size: calc(1rem * var(--font-scale));
   scroll-behavior: smooth;
   background: var(--shell);
   color: var(--ink);
@@ -53,7 +54,6 @@ body {
     linear-gradient(180deg, #fffdf6 0%, var(--shell) 42%, #f4f0e4 100%);
   color: var(--ink);
   font-family: var(--font-sans), Arial, sans-serif;
-  font-size: calc(16px * var(--font-scale));
 }
 
 :root[data-theme="tunnel"] body {
@@ -81,7 +81,7 @@ a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 3px solid var(--sand);
+  outline: 3px solid var(--ocean);
   outline-offset: 3px;
 }
 

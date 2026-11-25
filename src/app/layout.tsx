@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Địa đạo Kỳ Anh Audio Guide",
     description: "Hành trình lắng nghe lịch sử dưới lòng đất xứ Quảng.",
-    images: ["/images/tunnel-entrance.svg"],
+    images: [{ url: "/images/og-cover.jpg", width: 1200, height: 630, alt: "Địa đạo Kỳ Anh" }],
     locale: "vi_VN",
     alternateLocale: ["en_US"],
   },
@@ -53,9 +53,10 @@ export default async function RootLayout({
     <html lang="vi" className={`${sans.variable} ${serif.variable}`}>
       <body>
         <PreferenceProvider>
+          <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-4 focus:left-4 focus:rounded-full focus:bg-[var(--ocean)] focus:px-4 focus:py-2 focus:text-white focus:font-bold">Skip to content</a>
           <AnalyticsTracker />
           <Header />
-          <main>{children}</main>
+          <main id="main-content">{children}</main>
           <Footer contact={content.contact} />
           <BottomNav />
         </PreferenceProvider>

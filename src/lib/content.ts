@@ -272,7 +272,10 @@ async function readJsonLines<T>(filePath: string, blobKey: string): Promise<T[]>
   return raw
     .split("\n")
     .filter(Boolean)
-    .map((line) => JSON.parse(line) as T);
+    .flatMap((line) => {
+      try { return [JSON.parse(line) as T]; }
+      catch { return []; }
+    });
 }
 
 export async function getFeedbackRecords() {
@@ -285,7 +288,8 @@ export async function getFeedbackRecords() {
     return (settled as PromiseSettledResult<FeedbackRecord>[])
       .filter((r): r is PromiseFulfilledResult<FeedbackRecord> => r.status === "fulfilled")
       .map((r) => r.value)
-      .sort((a: FeedbackRecord, b: FeedbackRecord) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      // Sort ascending (oldest-first) so callers that do .reverse() / .slice(-10).reverse() work correctly
+      .sort((a: FeedbackRecord, b: FeedbackRecord) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   }
   const records = await readJsonLines<Partial<FeedbackRecord> & FeedbackPayload & { createdAt: string }>(feedbackPath, BLOB_FEEDBACK_KEY);
   return records.map((record, index) => ({
@@ -315,7 +319,7 @@ export async function deleteFeedbackRecord(id: string): Promise<boolean> {
 // Visits
 // ---------------------------------------------------------------------------
 export async function appendVisit(payload: VisitPayload, request: Request): Promise<void> {
-  if (!payload.path || payload.path.startsWith("/api") || payload.path.startsWith("/_next")) return;
+  if (!payload.path || payload.path.startsWith("/api") || payload.path.startsWith("/_next") || payload.path.startsWith("/admin")) return;
 
   const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const record: VisitRecord = {

@@ -3,7 +3,7 @@ import { put } from "@vercel/blob";
 import { promises as fs } from "fs";
 import path from "path";
 import { isAdminAuthenticated } from "@/lib/auth";
-import { updateStop } from "@/lib/content";
+import { getStop, updateStop } from "@/lib/content";
 
 const IS_VERCEL = !!process.env.VERCEL || !!process.env.BLOB_READ_WRITE_TOKEN;
 const IMG_DIR = path.join(process.cwd(), "public", "images");
@@ -41,6 +41,10 @@ export async function POST(request: Request) {
     .replace(/[^a-zA-Z0-9_\-\.]/g, "")
     .toLowerCase();
 
+  // Guard: verify stop exists BEFORE uploading the file
+  const existing = await getStop(stopId);
+  if (!existing) return NextResponse.json({ message: `Stop ${stopId} not found` }, { status: 404 });
+
   const buffer = Buffer.from(await file.arrayBuffer());
   let publicPath: string;
 
@@ -58,6 +62,10 @@ export async function POST(request: Request) {
     publicPath = `/images/${sanitized}`;
   }
 
-  const updated = await updateStop(stopId, { image: publicPath });
-  return NextResponse.json({ ok: true, path: publicPath, filename: sanitized, stop: updated });
+  try {
+    const updated = await updateStop(stopId, { image: publicPath });
+    return NextResponse.json({ ok: true, path: publicPath, filename: sanitized, stop: updated });
+  } catch (err) {
+    return NextResponse.json({ message: err instanceof Error ? err.message : "Could not update stop" }, { status: 400 });
+  }
 }
