@@ -3,7 +3,7 @@ import { absoluteUrl, getStops } from "@/lib/content";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const stops = await getStops();
-  const staticRoutes = ["", "/language", "/stops", "/map", "/qr", "/credits", "/feedback"];
+  const staticRoutes = ["", "/stops", "/map", "/gioi-thieu", "/credits", "/feedback"];
 
   return [
     ...staticRoutes.map((route) => ({

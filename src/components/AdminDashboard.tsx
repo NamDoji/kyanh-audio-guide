@@ -258,9 +258,9 @@ function ImageUploader({ stopId, current, onUploaded }: { stopId: number; curren
     const data = (await res.json()) as { ok?: boolean; path?: string; stop?: Stop; message?: string };
     if (res.ok && data.path && data.stop) {
       onUploaded(data.stop);
-      setMsg(`Da upload va luu: ${data.path}`);
+      setMsg(`Đã upload và lưu: ${data.path}`);
     } else {
-      setMsg(data.message ?? "Upload that bai");
+      setMsg(data.message ?? "Upload thất bại");
     }
     setUploading(false);
   };
@@ -269,7 +269,7 @@ function ImageUploader({ stopId, current, onUploaded }: { stopId: number; curren
     <div className="rounded-xl border border-[var(--line)] bg-[var(--sand-soft)] p-3">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-xs font-black uppercase tracking-wide text-[var(--muted)]">Anh minh hoa</p>
+          <p className="text-xs font-black uppercase tracking-wide text-[var(--muted)]">Ảnh minh họa</p>
           <p className="truncate text-sm font-semibold text-[var(--ink)]">{current}</p>
         </div>
         <button
@@ -347,15 +347,15 @@ function StopEditor({
   return (
     <div className="space-y-6">
       <section className="rounded-2xl bg-white/88 p-5 shadow">
-        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Thong tin diem dung</h3>
+        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Thông tin điểm dừng</h3>
         <div className="space-y-4">
           <Field label="Slug" value={stop.slug} onChange={(v) => onChange({ slug: v })} />
-          <Field label="Thoi luong" value={stop.duration} onChange={(v) => onChange({ duration: v })} />
-          <BilingualField label="Tieu de" vi={loc("title", "vi")} en={loc("title", "en")} onVi={(v) => setLoc("title", "vi", v)} onEn={(v) => setLoc("title", "en", v)} />
-          <BilingualField label="Phu de" vi={loc("subtitle", "vi")} en={loc("subtitle", "en")} onVi={(v) => setLoc("subtitle", "vi", v)} onEn={(v) => setLoc("subtitle", "en", v)} />
-          <BilingualField label="Tom tat" vi={loc("summary", "vi")} en={loc("summary", "en")} onVi={(v) => setLoc("summary", "vi", v)} onEn={(v) => setLoc("summary", "en", v)} multiline />
-          <BilingualField label="Vi tri" vi={loc("location", "vi")} en={loc("location", "en")} onVi={(v) => setLoc("location", "vi", v)} onEn={(v) => setLoc("location", "en", v)} />
-          <BilingualField label="Suy ngam" vi={loc("reflection", "vi")} en={loc("reflection", "en")} onVi={(v) => setLoc("reflection", "vi", v)} onEn={(v) => setLoc("reflection", "en", v)} multiline rows={2} />
+          <Field label="Thời lượng" value={stop.duration} onChange={(v) => onChange({ duration: v })} />
+          <BilingualField label="Tiêu đề" vi={loc("title", "vi")} en={loc("title", "en")} onVi={(v) => setLoc("title", "vi", v)} onEn={(v) => setLoc("title", "en", v)} />
+          <BilingualField label="Phụ đề" vi={loc("subtitle", "vi")} en={loc("subtitle", "en")} onVi={(v) => setLoc("subtitle", "vi", v)} onEn={(v) => setLoc("subtitle", "en", v)} />
+          <BilingualField label="Tóm tắt" vi={loc("summary", "vi")} en={loc("summary", "en")} onVi={(v) => setLoc("summary", "vi", v)} onEn={(v) => setLoc("summary", "en", v)} multiline />
+          <BilingualField label="Vị trí" vi={loc("location", "vi")} en={loc("location", "en")} onVi={(v) => setLoc("location", "vi", v)} onEn={(v) => setLoc("location", "en", v)} />
+          <BilingualField label="Suy ngẫm" vi={loc("reflection", "vi")} en={loc("reflection", "en")} onVi={(v) => setLoc("reflection", "vi", v)} onEn={(v) => setLoc("reflection", "en", v)} multiline rows={2} />
         </div>
       </section>
 
@@ -365,7 +365,7 @@ function StopEditor({
       </section>
 
       <section className="rounded-2xl bg-white/88 p-5 shadow">
-        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Diem noi bat</h3>
+        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Điểm nổi bật</h3>
         {(["vi", "en"] as Lang[]).map((lang) => (
           <div key={lang} className="mb-4">
             <p className="mb-2 text-xs font-black text-[var(--muted)]">{lang.toUpperCase()}</p>
@@ -392,7 +392,7 @@ function StopEditor({
               onClick={() => onChange({ highlights: { ...stop.highlights, [lang]: [...(stop.highlights[lang] ?? []), ""] } })}
               className="mt-1 inline-flex min-h-9 items-center rounded-full border border-[var(--line)] px-3 text-xs font-bold"
             >
-              Them muc
+              Thêm mục
             </button>
           </div>
         ))}
@@ -542,9 +542,9 @@ function NewsEditor({
     if (res.ok) {
       const post = (await res.json()) as NewsPost;
       setPosts((prev) => prev.map((item) => (item.id === post.id ? post : item)));
-      setMsg("Da luu tin tuc");
+      setMsg("Đã lưu tin tức");
     } else {
-      setMsg("Luu tin tuc that bai");
+      setMsg("Lưu tin tức thất bại");
     }
     setSaving(false);
   };
@@ -564,7 +564,7 @@ function NewsEditor({
       <aside className="rounded-2xl border border-[var(--line)] bg-white/88 p-2 shadow-lg">
         <button type="button" onClick={createPost} className="mb-2 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-[var(--bamboo)] px-3 text-sm font-bold text-white">
           <FilePlus className="size-4" />
-          Them tin tuc
+          Thêm tin tức
         </button>
         {posts.map((post) => (
           <button
@@ -587,25 +587,25 @@ function NewsEditor({
         {selected ? (
           <div className="space-y-6">
             <section className="rounded-2xl bg-white/88 p-5 shadow">
-              <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Noi dung tin tuc</h3>
+              <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Nội dung tin tức</h3>
               <div className="space-y-4">
                 <Field label="Slug" value={selected.slug} onChange={(v) => updatePost({ slug: v })} />
-                <Field label="Ngay xuat ban" type="datetime-local" value={selected.publishedAt.slice(0, 16)} onChange={(v) => updatePost({ publishedAt: new Date(v).toISOString() })} />
+                <Field label="Ngày xuất bản" type="datetime-local" value={selected.publishedAt.slice(0, 16)} onChange={(v) => updatePost({ publishedAt: new Date(v).toISOString() })} />
                 <label className="flex items-center gap-3 rounded-xl border border-[var(--line)] bg-[var(--sand-soft)] px-3 py-2 text-sm font-bold">
                   <input type="checkbox" checked={selected.status === "published"} onChange={(e) => updatePost({ status: e.target.checked ? "published" : "draft" })} />
-                  Xuat ban tin nay
+                  Xuất bản tin này
                 </label>
-                <Field label="Anh dai dien" value={selected.image} onChange={(v) => updatePost({ image: v })} />
-                <BilingualField label="Tieu de" vi={selected.title.vi} en={selected.title.en} onVi={(v) => setLoc("title", "vi", v)} onEn={(v) => setLoc("title", "en", v)} />
-                <BilingualField label="Mo ta ngan" vi={selected.excerpt.vi} en={selected.excerpt.en} onVi={(v) => setLoc("excerpt", "vi", v)} onEn={(v) => setLoc("excerpt", "en", v)} multiline />
-                <BilingualField label="Noi dung" vi={selected.body.vi} en={selected.body.en} onVi={(v) => setLoc("body", "vi", v)} onEn={(v) => setLoc("body", "en", v)} multiline rows={10} />
+                <Field label="Ảnh đại diện" value={selected.image} onChange={(v) => updatePost({ image: v })} />
+                <BilingualField label="Tiêu đề" vi={selected.title.vi} en={selected.title.en} onVi={(v) => setLoc("title", "vi", v)} onEn={(v) => setLoc("title", "en", v)} />
+                <BilingualField label="Mô tả ngắn" vi={selected.excerpt.vi} en={selected.excerpt.en} onVi={(v) => setLoc("excerpt", "vi", v)} onEn={(v) => setLoc("excerpt", "en", v)} multiline />
+                <BilingualField label="Nội dung" vi={selected.body.vi} en={selected.body.en} onVi={(v) => setLoc("body", "vi", v)} onEn={(v) => setLoc("body", "en", v)} multiline rows={10} />
               </div>
             </section>
 
             <div className="flex flex-wrap gap-3">
               <button type="button" onClick={savePost} disabled={saving} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--ocean)] px-6 font-black text-white disabled:opacity-50">
                 <Save className="size-5" />
-                {saving ? "Dang luu..." : "Luu tin tuc"}
+                {saving ? "Đang lưu..." : "Lưu tin tức"}
               </button>
               {selected.status === "published" ? (
                 <Link href={`/news/${selected.id}`} target="_blank" className="inline-flex min-h-12 items-center rounded-full border border-[var(--line)] bg-white px-5 text-sm font-bold">
@@ -622,7 +622,7 @@ function NewsEditor({
           </div>
         ) : (
           <div className="rounded-2xl border-2 border-dashed border-[var(--line)] p-12 text-center text-[var(--muted)]">
-            Chua co tin tuc. Bam &quot;Them tin tuc&quot; de tao moi.
+            Chưa có tin tức. Bấm &quot;Thêm tin tức&quot; để tạo mới.
           </div>
         )}
       </main>
@@ -647,7 +647,7 @@ function QRDownloadCard({ stop, baseUrl }: { stop: Stop; baseUrl: string }) {
     <article className="rounded-2xl border border-[var(--line)] bg-white/90 p-5 shadow">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-black uppercase tracking-widest text-[var(--ocean)]">Stop {stop.id}</p>
+          <p className="text-xs font-black uppercase tracking-widest text-[var(--ocean)]">Điểm {stop.id}</p>
           <h3 className="mt-2 text-lg font-black text-[var(--ink)]">{stop.title.vi}</h3>
         </div>
         <button type="button" onClick={download} className="grid size-10 place-items-center rounded-full bg-[var(--ocean)] text-white" aria-label="Download QR">
@@ -670,12 +670,12 @@ function QRManager({ stops }: { stops: Stop[] }) {
   return (
     <div>
       <div className="mb-5 rounded-2xl bg-white/88 p-5 shadow">
-        <h3 className="text-lg font-black text-[var(--ink)]">Quan ly QR code</h3>
+        <h3 className="text-lg font-black text-[var(--ink)]">Quản lý QR code</h3>
         <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-          Moi diem dung moi se tu co duong dan QR theo mau /stops/id. Tai PNG de in bien QR ngoai thuc dia.
+          Mỗi điểm dừng tự có đường dẫn QR theo mẫu /stops/id. Tải PNG để in biển QR ngoài thực địa.
         </p>
         <Link href="/qr" target="_blank" className="mt-4 inline-flex min-h-11 items-center rounded-full bg-[var(--earth)] px-5 text-sm font-black text-white">
-          Mo trang QR public
+          Mở trang QR public
         </Link>
       </div>
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -698,8 +698,8 @@ function StatsPanel({ stops }: { stops: Stop[] }) {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="rounded-2xl bg-white/88 p-8 text-center font-bold text-[var(--muted)]">Dang tai thong ke...</div>;
-  if (!stats) return <div className="rounded-2xl bg-red-50 p-8 text-center font-bold text-red-700">Khong tai duoc thong ke</div>;
+  if (loading) return <div className="rounded-2xl bg-white/88 p-8 text-center font-bold text-[var(--muted)]">Đang tải thống kê...</div>;
+  if (!stats) return <div className="rounded-2xl bg-red-50 p-8 text-center font-bold text-red-700">Không tải được thống kê</div>;
 
   const stopTitle = (id: number) => stops.find((stop) => stop.id === id)?.title.vi ?? `Stop ${id}`;
 
@@ -707,10 +707,10 @@ function StatsPanel({ stops }: { stops: Stop[] }) {
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-4">
         {[
-          ["Tong truy cap", stats.totalVisits],
-          ["Hom nay", stats.todayVisits],
-          ["Phan hoi", stats.totalFeedback],
-          ["Danh gia TB", stats.averageRating],
+          ["Tổng truy cập", stats.totalVisits],
+          ["Hôm nay", stats.todayVisits],
+          ["Phản hồi", stats.totalFeedback],
+          ["Đánh giá TB", stats.averageRating],
         ].map(([label, value]) => (
           <div key={label} className="rounded-2xl bg-white/88 p-5 shadow">
             <p className="text-xs font-black uppercase tracking-widest text-[var(--muted)]">{label}</p>
@@ -721,7 +721,7 @@ function StatsPanel({ stops }: { stops: Stop[] }) {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-2xl bg-white/88 p-5 shadow">
-          <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Trang duoc xem nhieu</h3>
+          <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Trang được xem nhiều</h3>
           <div className="space-y-3">
             {stats.topPaths.map((item) => (
               <div key={item.path} className="flex items-center justify-between gap-3 rounded-xl bg-[var(--sand-soft)] px-3 py-2">
@@ -733,7 +733,7 @@ function StatsPanel({ stops }: { stops: Stop[] }) {
         </section>
 
         <section className="rounded-2xl bg-white/88 p-5 shadow">
-          <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Luot nghe/xem theo diem</h3>
+          <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Lượt nghe/xem theo điểm</h3>
           <div className="space-y-3">
             {stats.stopVisits.map((item) => (
               <div key={item.stopId} className="flex items-center justify-between gap-3 rounded-xl bg-[var(--sand-soft)] px-3 py-2">
@@ -746,7 +746,7 @@ function StatsPanel({ stops }: { stops: Stop[] }) {
       </div>
 
       <section className="rounded-2xl bg-white/88 p-5 shadow">
-        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Phan hoi moi nhat</h3>
+        <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Phản hồi mới nhất</h3>
         <div className="grid gap-3">
           {stats.latestFeedback.map((item) => (
             <div key={`${item.createdAt}-${item.name}`} className="rounded-xl bg-[var(--sand-soft)] p-4">
@@ -798,9 +798,9 @@ function FeedbackManager() {
     const res = await fetch(`/api/admin/feedback/${encodeURIComponent(item.id)}`, { method: "DELETE" });
     if (res.ok) {
       setFeedback((prev) => prev.filter((record) => record.id !== item.id));
-      setMsg("Da xoa phan hoi");
+      setMsg("Đã xóa phản hồi");
     } else {
-      setMsg("Xoa phan hoi that bai");
+      setMsg("Xóa phản hồi thất bại");
     }
   };
 
@@ -808,7 +808,7 @@ function FeedbackManager() {
     ? Number((feedback.reduce((sum, item) => sum + Number(item.rating || 0), 0) / feedback.length).toFixed(1))
     : 0;
 
-  if (loading) return <div className="rounded-2xl bg-white/88 p-8 text-center font-bold text-[var(--muted)]">Dang tai phan hoi...</div>;
+  if (loading) return <div className="rounded-2xl bg-white/88 p-8 text-center font-bold text-[var(--muted)]">Đang tải phản hồi...</div>;
 
   return (
     <div className="space-y-5">
@@ -816,9 +816,9 @@ function FeedbackManager() {
 
       <div className="grid gap-4 md:grid-cols-3">
         {[
-          ["Tong phan hoi", feedback.length],
-          ["Danh gia TB", averageRating],
-          ["Moi nhat", feedback[0] ? new Date(feedback[0].createdAt).toLocaleDateString("vi-VN") : "-"],
+          ["Tổng phản hồi", feedback.length],
+          ["Đánh giá TB", averageRating],
+          ["Mới nhất", feedback[0] ? new Date(feedback[0].createdAt).toLocaleDateString("vi-VN") : "-"],
         ].map(([label, value]) => (
           <div key={label} className="rounded-2xl bg-white/88 p-5 shadow">
             <p className="text-xs font-black uppercase tracking-widest text-[var(--muted)]">{label}</p>
@@ -830,11 +830,11 @@ function FeedbackManager() {
       <section className="rounded-2xl bg-white/88 p-5 shadow">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Quan ly phan hoi</h3>
-            <p className="mt-1 text-sm text-[var(--muted)]">Xem danh gia, thong tin lien he va xoa phan hoi spam/test.</p>
+            <h3 className="text-sm font-black uppercase tracking-widest text-[var(--ocean)]">Quản lý phản hồi</h3>
+            <p className="mt-1 text-sm text-[var(--muted)]">Xem đánh giá, thông tin liên hệ và xóa phản hồi spam/test.</p>
           </div>
           <button type="button" onClick={() => loadFeedback()} className="min-h-10 rounded-full border border-[var(--line)] px-4 text-sm font-black text-[var(--muted)]">
-            Tai lai
+            Tải lại
           </button>
         </div>
 
@@ -850,15 +850,15 @@ function FeedbackManager() {
                       <span className="text-xs text-[var(--muted)]">{new Date(item.createdAt).toLocaleString("vi-VN")}</span>
                     </div>
                     <div className="mt-2 flex flex-wrap gap-2 text-xs font-semibold text-[var(--muted)]">
-                      {item.contact ? <span className="rounded-full bg-white px-2 py-1">Lien he: {item.contact}</span> : null}
-                      {item.nationality ? <span className="rounded-full bg-white px-2 py-1">Quoc tich: {item.nationality}</span> : null}
+                      {item.contact ? <span className="rounded-full bg-white px-2 py-1">Liên hệ: {item.contact}</span> : null}
+                      {item.nationality ? <span className="rounded-full bg-white px-2 py-1">Quốc tịch: {item.nationality}</span> : null}
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => remove(item)}
                     className="grid size-9 shrink-0 place-items-center rounded-full bg-red-50 text-red-700"
-                    aria-label="Xoa phan hoi"
+                    aria-label="Xóa phản hồi"
                   >
                     <Trash2 className="size-4" />
                   </button>
@@ -869,7 +869,7 @@ function FeedbackManager() {
           </div>
         ) : (
           <div className="rounded-2xl border-2 border-dashed border-[var(--line)] p-10 text-center text-sm font-bold text-[var(--muted)]">
-            Chua co phan hoi nao.
+            Chưa có phản hồi nào.
           </div>
         )}
       </section>
@@ -1121,7 +1121,7 @@ export function AdminDashboard({ content, role }: { content: SiteContent; role: 
   };
 
   const deleteStop = async () => {
-    if (!selectedStop || !confirm(`Xoa diem "${selectedStop.title.vi}"?`)) return;
+    if (!selectedStop || !confirm(`Xóa điểm "${selectedStop.title.vi}"?`)) return;
     const res = await fetch(`/api/stops/${selectedStop.id}`, { method: "DELETE" });
     if (res.ok) {
       const remaining = stops.filter((stop) => stop.id !== selectedStop.id);
@@ -1200,11 +1200,11 @@ export function AdminDashboard({ content, role }: { content: SiteContent; role: 
             <div className="flex flex-wrap gap-2">
               <button type="button" onClick={createStop} disabled={creating} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[var(--bamboo)] px-4 text-sm font-bold text-white disabled:opacity-50">
                 <FilePlus className="size-4" />
-                {creating ? "Dang tao..." : "Them diem moi"}
+                {creating ? "Đang tạo..." : "Thêm điểm mới"}
               </button>
               <button type="button" onClick={logout} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[var(--line)] px-4 text-sm font-bold text-[var(--muted)]">
                 <LogOut className="size-4" />
-                Dang xuat
+                Đăng xuất
               </button>
             </div>
           </div>

@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     id: newId,
     order: maxOrder + 1,
     slug: body.slug ?? `stop-${newId}`,
-    title: body.title ?? { vi: `Điểm ${newId}`, en: `Stop ${newId}` },
+    title: body.title ?? { vi: "", en: "" },
     subtitle: body.subtitle ?? { vi: "", en: "" },
     summary: body.summary ?? { vi: "", en: "" },
     transcript: body.transcript ?? { vi: "", en: "" },
