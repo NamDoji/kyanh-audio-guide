@@ -17,7 +17,7 @@ export function Footer({ contact }: { contact?: SiteContact }) {
       <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1.2fr_0.8fr] lg:px-8">
         <div>
           <p className="text-sm font-black uppercase tracking-[0.25em] text-[var(--ocean)]">
-            Ky Anh Audio Guide
+            {lang === "vi" ? "Địa đạo Kỳ Anh Audio Guide" : "Ky Anh Audio Guide"}
           </p>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--muted)]">
             {lang === "vi"
@@ -39,8 +39,8 @@ export function Footer({ contact }: { contact?: SiteContact }) {
           <Link href="/admin" className="min-h-11 rounded-full py-3 hover:text-[var(--ocean)]">
             Admin
           </Link>
-          <Link href="/qr" className="min-h-11 rounded-full py-3 hover:text-[var(--ocean)]">
-            QR
+          <Link href="/gioi-thieu" className="min-h-11 rounded-full py-3 hover:text-[var(--ocean)]">
+            {lang === "vi" ? "Giới thiệu" : "About"}
           </Link>
           <Link href="/feedback" className="min-h-11 rounded-full py-3 hover:text-[var(--ocean)]">
             {lang === "vi" ? "Phản hồi" : "Feedback"}

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Headphones, MapPin } from "lucide-react";
 import type { Lang, Stop } from "@/types/content";
 
-export function StopCard({ stop, lang, compact = false }: { stop: Stop; lang: Lang; compact?: boolean }) {
+export function StopCard({ stop, lang }: { stop: Stop; lang: Lang }) {
   return (
     <article className="group overflow-hidden rounded-[1.75rem] border border-white/70 bg-white/88 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl tunnel:border-stone-700 tunnel:bg-stone-950/80">
       <div className="relative aspect-[4/3] overflow-hidden">
@@ -25,12 +25,10 @@ export function StopCard({ stop, lang, compact = false }: { stop: Stop; lang: La
           </span>
         </div>
         <p className="mt-3 line-clamp-3 text-sm leading-6 text-[var(--muted)]">{stop.summary[lang]}</p>
-        {!compact && (
-          <p className="mt-3 flex items-center gap-2 text-sm font-semibold text-[var(--ocean)]">
-            <MapPin aria-hidden className="size-4" />
-            {stop.location[lang]}
-          </p>
-        )}
+        <p className="mt-3 flex items-center gap-2 text-sm font-semibold text-[var(--ocean)]">
+          <MapPin aria-hidden className="size-4" />
+          {stop.location[lang]}
+        </p>
         <div className="mt-5 grid grid-cols-2 gap-2">
           <Link
             href={`/stops/${stop.id}`}

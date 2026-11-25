@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s | Địa đạo Kỳ Anh Audio Guide",
   },
   description:
-    "Mobile-first bilingual audio guide for the Ky Anh Underground Tunnels, with QR stops, route map, audio player, admin content editing and visitor feedback.",
+    "Thuyết minh tự động song ngữ Việt–Anh cho Di tích Địa đạo Kỳ Anh. Quét QR tại từng điểm để nghe câu chuyện lịch sử tại chỗ.",
   openGraph: {
     title: "Địa đạo Kỳ Anh Audio Guide",
     description: "Hành trình lắng nghe lịch sử dưới lòng đất xứ Quảng.",

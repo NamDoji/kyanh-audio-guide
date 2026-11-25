@@ -20,7 +20,7 @@ export type Stop = {
   transcript: LocalizedText;
   location: LocalizedText;
   highlights: LocalizedList;
-  reflection: LocalizedText;
+  reflection?: LocalizedText;
   duration: string;
   image: string;
   audio: LocalizedText;

@@ -154,17 +154,19 @@ export function AudioPlayer({ stop, lang }: { stop: Stop; lang: Lang }) {
 
           {/* Progress bar */}
           <label className="sr-only" htmlFor={`progress-${stop.id}`}>Audio progress</label>
-          <input
-            id={`progress-${stop.id}`}
-            type="range"
-            min={0}
-            max={100}
-            step={0.1}
-            value={progress}
-            onChange={(e) => seek(Number(e.target.value))}
-            className="mt-3 h-3 w-full cursor-pointer accent-[var(--ocean)]"
-            aria-label="Seek audio"
-          />
+          <div className="py-2">
+            <input
+              id={`progress-${stop.id}`}
+              type="range"
+              min={0}
+              max={100}
+              step={0.1}
+              value={progress}
+              onChange={(e) => seek(Number(e.target.value))}
+              className="mt-1 h-2 w-full cursor-pointer accent-[var(--ocean)] [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--ocean)] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer"
+              aria-label="Seek audio"
+            />
+          </div>
 
           {/* Time display */}
           <div className="flex items-center justify-between text-xs font-semibold text-[var(--muted)]">

@@ -11,7 +11,7 @@ export function StopsPageClient({ stops }: { stops: Stop[] }) {
     <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="max-w-3xl">
         <p className="text-sm font-black uppercase tracking-[0.25em] text-[var(--ocean)]">
-          {lang === "vi" ? "6 điểm dừng" : "6 stops"}
+          {lang === "vi" ? `${stops.length} điểm dừng` : `${stops.length} stops`}
         </p>
         <h1 className="heritage-title mt-3 text-4xl font-black text-[var(--ink)] sm:text-5xl">
           {lang === "vi" ? "Tuyến tham quan Địa đạo Kỳ Anh" : "Ky Anh tunnel visitor route"}

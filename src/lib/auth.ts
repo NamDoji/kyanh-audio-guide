@@ -61,6 +61,7 @@ export async function setAdminSession(role: AdminRole = "admin"): Promise<void> 
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 8, // 8 hours
+    secure: process.env.NODE_ENV === "production",
   });
 }
 

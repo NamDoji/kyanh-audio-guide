@@ -101,7 +101,7 @@ function safeParseJson(raw: string): SiteContent | null {
   }
 }
 
-export const getContent = cache(async function getContentImpl(): Promise<SiteContent> {
+async function loadContent(): Promise<SiteContent> {
   if (IS_VERCEL) {
     const raw = await blobRead(BLOB_DATA_KEY);
     if (raw) {
@@ -122,7 +122,9 @@ export const getContent = cache(async function getContentImpl(): Promise<SiteCon
     if (parsed) return withDefaults(parsed);
   } catch { /* file missing on first run */ }
   return withDefaults(EMPTY_SITE);
-});
+}
+
+export const getContent = cache(loadContent);
 
 export async function saveContent(content: SiteContent): Promise<void> {
   const data = `${JSON.stringify(withDefaults(content), null, 2)}\n`;
@@ -145,7 +147,7 @@ export async function getStop(id: number): Promise<Stop | undefined> {
 }
 
 export async function updateStop(id: number, patch: Partial<Stop>): Promise<Stop> {
-  const content = await getContent();
+  const content = await loadContent();
   const index = content.stops.findIndex((stop) => stop.id === id);
 
   if (index < 0) {
@@ -169,7 +171,7 @@ export async function updateStop(id: number, patch: Partial<Stop>): Promise<Stop
 }
 
 export async function reorderStop(stopId: number, direction: "up" | "down"): Promise<void> {
-  const content = await getContent();
+  const content = await loadContent();
   const sorted = [...content.stops].sort((a, b) => (a.order ?? a.id) - (b.order ?? b.id));
   const idx = sorted.findIndex((s) => s.id === stopId);
   if (idx < 0) throw new Error(`Stop ${stopId} not found`);
@@ -189,7 +191,7 @@ export async function reorderStop(stopId: number, direction: "up" | "down"): Pro
 }
 
 export async function saveContact(contact: SiteContact): Promise<void> {
-  const content = await getContent();
+  const content = await loadContent();
   content.contact = contact;
   await saveContent(content);
 }
@@ -207,7 +209,7 @@ export async function getNewsPost(id: number): Promise<NewsPost | undefined> {
 }
 
 export async function upsertNewsPost(payload: Partial<NewsPost>): Promise<NewsPost> {
-  const content = await getContent();
+  const content = await loadContent();
   const existingIndex = payload.id ? content.news.findIndex((post) => post.id === payload.id) : -1;
   const maxId = content.news.reduce((max, post) => Math.max(max, post.id), 0);
   const id = existingIndex >= 0 ? content.news[existingIndex].id : maxId + 1;
@@ -232,7 +234,7 @@ export async function upsertNewsPost(payload: Partial<NewsPost>): Promise<NewsPo
 }
 
 export async function deleteNewsPost(id: number): Promise<void> {
-  const content = await getContent();
+  const content = await loadContent();
   content.news = content.news.filter((post) => post.id !== id);
   await saveContent(content);
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { reorderStop } from "@/lib/content";
+import { getContent, reorderStop } from "@/lib/content";
 import { isAdminAuthenticated } from "@/lib/auth";
 
 export async function POST(request: Request) {
@@ -15,7 +15,9 @@ export async function POST(request: Request) {
 
   try {
     await reorderStop(body.stopId, direction);
-    return NextResponse.json({ ok: true });
+    const updated = await getContent();
+    const orders = updated.stops.map((s) => ({ id: s.id, order: s.order ?? s.id }));
+    return NextResponse.json({ ok: true, orders });
   } catch (err) {
     return NextResponse.json({ message: err instanceof Error ? err.message : "Reorder failed" }, { status: 400 });
   }

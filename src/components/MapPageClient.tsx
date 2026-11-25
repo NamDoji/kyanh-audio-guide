@@ -12,7 +12,9 @@ export function MapPageClient({ stops }: { stops: Stop[] }) {
   return (
     <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="max-w-3xl">
-        <p className="text-sm font-black uppercase tracking-[0.25em] text-[var(--ocean)]">Map</p>
+        <p className="text-sm font-black uppercase tracking-[0.25em] text-[var(--ocean)]">
+          {lang === "vi" ? "Bản đồ" : "Map"}
+        </p>
         <h1 className="heritage-title mt-3 text-4xl font-black text-[var(--ink)] sm:text-5xl">
           {lang === "vi" ? "Bản đồ tuyến tham quan" : "Illustrated visitor map"}
         </h1>

@@ -5,7 +5,7 @@ import type { Stop } from "@/types/content";
 
 export async function GET() {
   const content = await getContent();
-  return NextResponse.json(content.stops.sort((a, b) => a.id - b.id));
+  return NextResponse.json(content.stops.sort((a, b) => (a.order ?? a.id) - (b.order ?? b.id)));
 }
 
 export async function POST(request: Request) {

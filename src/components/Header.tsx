@@ -13,7 +13,6 @@ const nav = [
   { href: "/map", vi: "Bản đồ", en: "Map" },
   { href: "/gioi-thieu", vi: "Giới thiệu", en: "About" },
   { href: "/feedback", vi: "Phản hồi", en: "Feedback" },
-  { href: "/admin", vi: "Admin", en: "Admin" },
 ];
 
 export function Header() {
@@ -33,7 +32,7 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main navigation">
-          {nav.slice(0, 6).map((item) => (
+          {nav.map((item) => (
             <Link
               key={item.href}
               href={item.href}

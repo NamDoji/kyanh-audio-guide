@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
-import { Compass } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Compass } from "lucide-react";
 import type { SiteContent } from "@/types/content";
 import { usePreferences } from "./PreferenceProvider";
 
@@ -18,12 +18,10 @@ export function GioiThieuClient({ site }: { site: SiteContent["site"] }) {
       </h1>
 
       <div className="relative mt-8 aspect-[16/9] w-full overflow-hidden rounded-[2rem] shadow-xl">
-        <Image
+        <img
           src="/images/tunnel-entrance.svg"
           alt={lang === "vi" ? "Địa đạo Kỳ Anh" : "Ky Anh Tunnels"}
-          fill
-          className="object-cover"
-          priority
+          className="h-full w-full object-cover"
         />
       </div>
 
@@ -80,6 +78,22 @@ export function GioiThieuClient({ site }: { site: SiteContent["site"] }) {
               : "Scan the QR code at each information board to listen to the audio narration on the spot. Please follow onsite signs and the guidance of heritage site staff."}
           </p>
         </div>
+      </div>
+
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <Link
+          href="/stops"
+          className="inline-flex min-h-14 flex-1 items-center justify-center gap-2 rounded-full bg-[var(--ocean)] px-6 text-base font-black text-white shadow-xl transition hover:-translate-y-0.5"
+        >
+          {lang === "vi" ? "Bắt đầu nghe audio" : "Start listening"}
+          <ArrowRight aria-hidden className="size-5" />
+        </Link>
+        <Link
+          href="/map"
+          className="inline-flex min-h-14 flex-1 items-center justify-center gap-2 rounded-full border border-[var(--line)] bg-white px-6 text-base font-black text-[var(--ink)] shadow-lg transition hover:-translate-y-0.5"
+        >
+          {lang === "vi" ? "Xem bản đồ" : "View map"}
+        </Link>
       </div>
     </article>
   );
