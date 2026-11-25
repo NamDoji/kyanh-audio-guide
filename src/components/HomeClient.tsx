@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Headphones, QrCode, ShieldCheck } from "lucide-react";
+import { ArrowRight, CalendarDays, Headphones, ShieldCheck } from "lucide-react";
 import type { SiteContent } from "@/types/content";
 import { SafetyNotes } from "./SafetyNotes";
 import { SiteMap } from "./SiteMap";
@@ -84,19 +84,13 @@ export function HomeClient({ content }: { content: SiteContent }) {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-black uppercase tracking-[0.25em] text-[var(--ocean)]">
-              {lang === "vi" ? "Danh sách điểm dừng" : "Stops"}
-            </p>
-            <h2 className="heritage-title mt-2 text-3xl font-black text-[var(--ink)]">
-              {lang === "vi" ? "Nghe câu chuyện theo từng điểm" : "Listen stop by stop"}
-            </h2>
-          </div>
-          <Link href="/qr" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--earth)] px-5 text-sm font-black text-white">
-            <QrCode aria-hidden className="size-5" />
-            {lang === "vi" ? "QR tại mỗi điểm" : "QR at each stop"}
-          </Link>
+        <div className="mb-6">
+          <p className="text-sm font-black uppercase tracking-[0.25em] text-[var(--ocean)]">
+            {lang === "vi" ? "Danh sách điểm dừng" : "Stops"}
+          </p>
+          <h2 className="heritage-title mt-2 text-3xl font-black text-[var(--ink)]">
+            {lang === "vi" ? "Nghe câu chuyện theo từng điểm" : "Listen stop by stop"}
+          </h2>
         </div>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {stops.map((stop) => (

@@ -80,7 +80,7 @@ function withDefaults(content: SiteContent): SiteContent {
 
 const EMPTY_SITE: SiteContent = {
   site: {
-    name: { vi: "Địa đạo Kỳ Anh", en: "Ky Anh Tunnels" },
+    name: { vi: "Địa đạo Kỳ Anh Audio Guide", en: "Ky Anh Tunnels Audio Guide" },
     tagline: { vi: "", en: "" },
     description: { vi: "", en: "" },
   },

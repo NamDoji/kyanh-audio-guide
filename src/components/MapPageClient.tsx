@@ -28,14 +28,9 @@ export function MapPageClient({ stops }: { stops: Stop[] }) {
       <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {stops.map((stop) => (
           <article key={stop.id} className="rounded-[1.75rem] border border-[var(--line)] bg-white/88 p-5 shadow-lg tunnel:bg-stone-950/80">
-            <div className="flex items-start gap-3">
-              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[var(--ocean)] text-lg font-black text-white">
-                {stop.id}
-              </span>
-              <div>
-                <h2 className="text-lg font-black text-[var(--ink)]">{stop.title[lang]}</h2>
-                <p className="mt-2 line-clamp-3 text-sm leading-6 text-[var(--muted)]">{stop.summary[lang]}</p>
-              </div>
+            <div>
+              <h2 className="text-lg font-black text-[var(--ink)]">{stop.title[lang]}</h2>
+              <p className="mt-2 line-clamp-3 text-sm leading-6 text-[var(--muted)]">{stop.summary[lang]}</p>
             </div>
             <div className="mt-4 flex gap-2">
               <Link href={`/stops/${stop.id}#audio`} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[var(--ocean)] px-4 text-sm font-black text-white">

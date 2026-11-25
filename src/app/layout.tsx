@@ -23,8 +23,8 @@ const serif = Merriweather({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: {
-    default: "Ky Anh Underground Tunnel Audio Guide",
-    template: "%s | Ky Anh Audio Guide",
+    default: "Địa đạo Kỳ Anh Audio Guide",
+    template: "%s | Địa đạo Kỳ Anh Audio Guide",
   },
   description:
     "Mobile-first bilingual audio guide for the Ky Anh Underground Tunnels, with QR stops, route map, audio player, admin content editing and visitor feedback.",

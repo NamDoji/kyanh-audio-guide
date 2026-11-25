@@ -11,8 +11,7 @@ const nav = [
   { href: "/", vi: "Trang chủ", en: "Home" },
   { href: "/stops", vi: "Điểm dừng", en: "Stops" },
   { href: "/map", vi: "Bản đồ", en: "Map" },
-  { href: "/news", vi: "Tin tức", en: "News" },
-  { href: "/qr", vi: "QR", en: "QR" },
+  { href: "/gioi-thieu", vi: "Giới thiệu", en: "About" },
   { href: "/feedback", vi: "Phản hồi", en: "Feedback" },
   { href: "/admin", vi: "Admin", en: "Admin" },
 ];

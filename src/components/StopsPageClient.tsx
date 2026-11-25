@@ -18,8 +18,8 @@ export function StopsPageClient({ stops }: { stops: Stop[] }) {
         </h1>
         <p className="mt-4 text-lg leading-8 text-[var(--muted)]">
           {lang === "vi"
-            ? "Mỗi điểm có trang QR riêng, audio song ngữ, tóm tắt, hình ảnh, vị trí và gợi ý suy ngẫm."
-            : "Each stop has its own QR page, bilingual audio, short summary, image, location and reflection prompt."}
+            ? "Mỗi điểm có audio song ngữ, tóm tắt, điểm đáng chú ý và hình ảnh di tích."
+            : "Each stop has bilingual audio, a summary, highlights and heritage photos."}
         </p>
       </div>
       <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">

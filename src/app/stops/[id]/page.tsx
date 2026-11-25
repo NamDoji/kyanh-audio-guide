@@ -16,9 +16,5 @@ export default async function StopDetailPage({ params }: { params: Promise<{ id:
 
   if (!stop) notFound();
 
-  const currentIdx = stops.findIndex((item) => item.id === stop.id);
-  const previous = currentIdx > 0 ? stops[currentIdx - 1] : undefined;
-  const next = currentIdx < stops.length - 1 ? stops[currentIdx + 1] : undefined;
-
-  return <StopDetailClient stop={stop} previous={previous} next={next} />;
+  return <StopDetailClient stop={stop} />;
 }

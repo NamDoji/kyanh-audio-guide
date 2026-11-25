@@ -1,15 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Home, Map, MessageSquareText, Newspaper, QrCode, Route } from "lucide-react";
+import { Home, Info, Map, MessageSquareText, Route } from "lucide-react";
 import { usePreferences } from "./PreferenceProvider";
 
 const items = [
   { href: "/", icon: Home, vi: "Home", en: "Home" },
   { href: "/stops", icon: Route, vi: "Điểm", en: "Stops" },
   { href: "/map", icon: Map, vi: "Map", en: "Map" },
-  { href: "/news", icon: Newspaper, vi: "Tin", en: "News" },
-  { href: "/qr", icon: QrCode, vi: "QR", en: "QR" },
+  { href: "/gioi-thieu", icon: Info, vi: "Giới thiệu", en: "About" },
   { href: "/feedback", icon: MessageSquareText, vi: "Góp ý", en: "Feedback" },
 ];
 
@@ -18,7 +17,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-2 bottom-3 z-50 grid grid-cols-6 rounded-[1.5rem] border border-white/50 bg-white/92 p-1 shadow-2xl backdrop-blur-xl tunnel:border-stone-700 tunnel:bg-stone-950/92 md:hidden"
+      className="fixed inset-x-2 bottom-3 z-50 grid grid-cols-5 rounded-[1.5rem] border border-white/50 bg-white/92 p-1 shadow-2xl backdrop-blur-xl tunnel:border-stone-700 tunnel:bg-stone-950/92 md:hidden"
       aria-label="Mobile bottom navigation"
     >
       {items.map((item) => {
